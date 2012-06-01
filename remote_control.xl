@@ -1,0 +1,41 @@
+﻿// ****************************************************************************
+//  remote_control.xl                                              Tao project
+// ****************************************************************************
+// 
+//   File Description:
+// 
+//     Remote control module. Enables a remote client to connect to the
+//     current Tao process, and execute commands in the context of the current
+//     document (such as: skip page, blank screen, enable or disable
+//     animations, etc.). 
+// 
+// 
+// 
+// 
+// 
+// ****************************************************************************
+//  (C) 2012 Christophe de Dinechin <christophe@taodyne.com>
+//  (C) 2012 Taodyne SAS
+// ****************************************************************************
+
+module_description
+    id "D898EAE4-FE05-47AD-9210-566CC849F471"
+    name "Remote control"
+    import_name "RemoteControl"
+    description "Allows a remote client to control the display of a Tao " &
+                "document (skip page, blank screen, etc.)."
+    author "Taodyne SAS"
+    website "http://www.taodyne.com"
+    version 1.0
+
+module_description "fr",
+    name "Contrôle à distance"
+    description "Permet à un client distant de contrôler l'affichage d'un " &
+                "document Tao (changer de page, désactiver l'affichage, etc.)."
+
+REMOTE_CONTROL_PORT -> 2206
+
+remote_control_hook Id:integer ->
+    remote_control_hook Id, REMOTE_CONTROL_PORT
+
+remote_control_hook -> remote_control_hook 0
