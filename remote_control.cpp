@@ -19,10 +19,8 @@
 // ****************************************************************************
 
 #include "remote_control.h"
-#include "tao/tao_utf8.h"
-#include "tao/tao_info.h"
+#include "hook.h"
 #include "tao/module_api.h"
-#include "runtime.h"
 
 using namespace Tao;
 
@@ -40,72 +38,16 @@ const Tao::ModuleApi *tao = NULL;
 //    return result;
 //}
 
-struct SourceCodeInfo : XL::Info
+
+
+XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
+                             int id, int /*port*/)
 // ----------------------------------------------------------------------------
-//    Store XL code and tree
+//    Insertion point for arbitrary commands from remote client
 // ----------------------------------------------------------------------------
 {
-    SourceCodeInfo() {}
-    ~SourceCodeInfo() {}
-    text       src;
-    XL::Tree_p tree;
-};
-
-
-XL::Tree_p evalInternal(XL::Context *context, XL::Tree_p self, text code,
-                        bool once)
-// ----------------------------------------------------------------------------
-//    Execute code given as source text
-// ----------------------------------------------------------------------------
-{
-    SourceCodeInfo *cached = self->GetInfo<SourceCodeInfo>();
-    if (!cached)
-    {
-        cached = new SourceCodeInfo();
-        self->SetInfo<SourceCodeInfo>(cached);
-    }
-    bool changed = false;
-    if (cached->src != code)
-    {
-        XL::Tree *tree = XL::xl_parse_text(code);
-        if (!tree)
-            return XL::xl_false;
-        cached->src = code;
-        if (XL::Symbols *syms = self->Symbols())
-            tree->SetSymbols(syms);
-        cached->tree = tree;
-        changed = true;
-    }
-    if (once && !changed)
-        return XL::xl_false;
-    return context->Evaluate(cached->tree);
-}
-
-
-XL::Tree_p eval(XL::Context *context, XL::Tree_p self, text code)
-// ----------------------------------------------------------------------------
-//    Execute code given as source text
-// ----------------------------------------------------------------------------
-{
-    return evalInternal(context, self, code);
-}
-
-
-XL::Tree_p evalOnce(XL::Context *context, XL::Tree_p self, text code)
-// ----------------------------------------------------------------------------
-//    Execute code given as source text
-// ----------------------------------------------------------------------------
-{
-    return evalInternal(context, self, code, true);
-}
-
-
-XL::Tree_p remoteControlHook(XL::Context */*context*/, XL::Tree_p /*self*/,
-                             int /*id*/, int /*port*/)
-// ----------------------------------------------------------------------------
-//    Start server to execute commands
-// ----------------------------------------------------------------------------
-{
+    Hook * hook = Hook::hook(id);
+    hook->exec(context, self);
     return XL::xl_false;
 }
 

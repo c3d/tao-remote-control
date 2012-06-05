@@ -25,12 +25,7 @@
 #include "tree.h"
 #include "context.h"
 
-XL::Tree_p evalInternal(XL::Context *context, XL::Tree_p self, text code,
-                        bool once = false);
-
 // Primitives
-XL::Tree_p eval(XL::Context *context, XL::Tree_p self, text code);
-XL::Tree_p evalOnce(XL::Context *context, XL::Tree_p self, text code);
 XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self, int id,
                              int port);
 

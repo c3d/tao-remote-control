@@ -21,6 +21,7 @@
 // ****************************************************************************
 
 #include "remote_control.h"
+#include "hook.h"
 
 PREFIX(RemoteControlHook,  tree, "remote_control_hook",
        PARM(id, integer, "Hook identifier")
@@ -33,12 +34,12 @@ PREFIX(RemoteControlHook,  tree, "remote_control_hook",
 
 PREFIX(Eval, tree, "eval",
        PARM(code, text, "Code to execute"),
-       return eval(context, self, code),
+       return Hook::eval(context, self, code),
        SYNOPSIS("Execute XL code passed as text. Code is compiled on first "
                 "call, and cached."))
 PREFIX(EvalOnce, tree, "eval_once",
        PARM(code, text, "Code to execute"),
-       return evalOnce(context, self, code),
+       return Hook::evalOnce(context, self, code),
        SYNOPSIS("Execute XL code passed as text once. code is executed the "
                 "first time the primitive is called, or the source text "
                 "is different from the previous call, or the document is "

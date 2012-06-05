@@ -16,9 +16,9 @@ include(../modules.pri)
 
 
 INCLUDEPATH += $${TAOTOPSRC}/tao/include/tao/
-HEADERS = remote_control.h
+HEADERS = hook.h remote_control.h
 
-SOURCES = remote_control.cpp
+SOURCES = hook.cpp remote_control.cpp
 
 TBL_SOURCES  = remote_control.tbl
 
