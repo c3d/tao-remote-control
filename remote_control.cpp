@@ -20,6 +20,8 @@
 
 #include "remote_control.h"
 #include "hook.h"
+#include "hook_manager.h"
+#include "server.h"
 #include "tao/module_api.h"
 
 using namespace Tao;
@@ -46,7 +48,10 @@ XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
 //    Insertion point for arbitrary commands from remote client
 // ----------------------------------------------------------------------------
 {
-    Hook * hook = Hook::hook(id);
+    // First call instanciates server
+    (void)Server::instance();
+
+    Hook * hook = HookManager::instance()->hook(id);
     hook->exec(context, self);
     return XL::xl_false;
 }
