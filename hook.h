@@ -51,7 +51,7 @@ public:
 public:
     XL::Tree_p          exec(XL::Context *context, XL::Tree_p self);
 
-    void                setCommand(text cmd);
+    void                setCommand(text cmd, bool once = false);
 
 protected:
     static
@@ -66,6 +66,7 @@ private:
 public:
     text                command;
     bool                execOnce;
+    int                 onceCounter;
     int                 refreshEvent;
 };
 

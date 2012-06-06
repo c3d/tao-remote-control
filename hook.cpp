@@ -32,8 +32,18 @@
 
 extern Tao::ModuleApi *tao;
 
+
+inline std::string operator +(QString s)
+// ----------------------------------------------------------------------------
+//   Convert QString to std::string
+// ----------------------------------------------------------------------------
+{
+    return std::string(s.toUtf8().constData());
+}
+
+
 Hook::Hook(int id)
-    : id(id), command(""), execOnce(false), refreshEvent(-1)
+    : id(id), command(""), execOnce(false), onceCounter(0), refreshEvent(-1)
 // ----------------------------------------------------------------------------
 //    Create hook
 // ----------------------------------------------------------------------------
@@ -54,14 +64,23 @@ XL::Tree_p Hook::exec(XL::Context *context, XL::Tree_p self)
 }
 
 
-void Hook::setCommand(text cmd)
+void Hook::setCommand(text cmd, bool once)
 // ----------------------------------------------------------------------------
 //    Set command to be run by this hook
 // ----------------------------------------------------------------------------
 {
+    execOnce = once;
+    if (execOnce)
+    {
+        // Append a string that will differ each time a "once" command is set
+        // See evalInternal()
+        QString tag = QString(" /* %1 */").arg(onceCounter++);
+        cmd += +tag;
+    }
     command = cmd;
     IFTRACE(remotecontrol)
-        debug() << "XL code set to: " << command << "\n";
+        debug() << "once=" << execOnce
+                << " XL code set to: " << command << "\n";
     Q_ASSERT(tao);
     tao->postEvent(refreshEvent);
 }

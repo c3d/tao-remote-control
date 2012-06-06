@@ -52,6 +52,13 @@ ClientConnection::ClientConnection(QAbstractSocket *socket)
     // Pre-defined macros. Example: command @quit will map to XL code "exit 0".
     macros["quit"] = "xl exit 0";
     macros["q"] = "@quit";
+    macros["next_page"] = "xl! if page_number<page_count then "
+                          "goto_page page_name (page_number+1)";
+    macros["prev_page"] = "xl! if page_number>1 then "
+                          "goto_page page_name (page_number-1)";
+    macros["play"]  = "xl! enable_animations true";
+    macros["pause"] = "xl! enable_animations false";
+    macros["blank"] = "xl! toggle_blank_screen";
 
     Q_ASSERT(socket);
     connect(socket, SIGNAL(readyRead()),
@@ -78,17 +85,6 @@ void ClientConnection::setCurrentHookId(int id)
 // ----------------------------------------------------------------------------
 {
     currentHook = id;
-}
-
-
-void ClientConnection::setExecOnce(bool once)
-// ----------------------------------------------------------------------------
-//   Subsequent commands to be executed once or on each refresh
-// ----------------------------------------------------------------------------
-{
-    IFTRACE(remotecontrol)
-        debug() << "Set execOnce: " << once << "\n";
-    HookManager::instance()->hook(currentHook)->execOnce = once;
 }
 
 
@@ -121,7 +117,7 @@ void ClientConnection::processCommand(QString cmd)
 // ----------------------------------------------------------------------------
 {
     IFTRACE(remotecontrol)
-        debug() << "Command received: [" << +cmd << "]\n";
+        debug() << "Command [" << +cmd << "]\n";
 
     if (cmd == "help" || cmd == "?")
         sendHelp();
@@ -141,6 +137,8 @@ void ClientConnection::processCommand(QString cmd)
         processUnsetMacro(cmd);
     else if (QRegExp("^xl\\s").indexIn(cmd) != -1)
         processXlCommand(cmd);
+    else if (QRegExp("^xl!\\s").indexIn(cmd) != -1)
+        processXlCommand(cmd, true);
     else
         sendText("Unknown command or syntax error.\n");
 }
@@ -200,18 +198,18 @@ void ClientConnection::processMacro(QString cmd)
 }
 
 
-void ClientConnection::processXlCommand(QString cmd)
+void ClientConnection::processXlCommand(QString cmd, bool once)
 // ----------------------------------------------------------------------------
 //   Execute raw XL code
 // ----------------------------------------------------------------------------
 {
     QString xl;
-    QRegExp xlCmd("xl(.*)");
+    QRegExp xlCmd = once ? QRegExp("xl!(.*)") : QRegExp("xl(.*)");
     if (xlCmd.indexIn(cmd) > -1)
         xl = xlCmd.cap(1);
     xl = xl.trimmed();
     if (!xl.isEmpty())
-        runXl(xl);
+        runXl(xl, once);
 }
 
 
@@ -285,6 +283,9 @@ void ClientConnection::sendHelp()
     _H("  xl <code>\n");
     _H("      Execute XL code.\n");
     _H("      Example:  xl locally {color \"red\"; circle 0, 0, 100}\n");
+    _H("  xl! <code>\n");
+    _H("      Execute XL code once per call to the hook.\n");
+    _H("      Example:  xl! if page_number>1 then goto_page page_name (page_number-1)\n");
     _H("  help, ?\n");
     _H("      This help.\n");
     _H("  quit, q\n");
@@ -328,12 +329,12 @@ void ClientConnection::listHooks()
 }
 
 
-void ClientConnection::runXl(QString cmd)
+void ClientConnection::runXl(QString cmd, bool once)
 // ----------------------------------------------------------------------------
 //   Set the XL code to be executed by the hook
 // ----------------------------------------------------------------------------
 {
-    HookManager::instance()->hook(currentHook)->setCommand(+cmd);
+    HookManager::instance()->hook(currentHook)->setCommand(+cmd, once);
 }
 
 

@@ -46,7 +46,6 @@ public:
 
 public slots:
     void                setCurrentHookId(int id);
-    void                setExecOnce(bool once);
 
 protected slots:
     void                onReadyRead();
@@ -58,7 +57,7 @@ protected:
     void                processSetMacro(QString cmd);
     void                processUnsetMacro(QString cmd);
     void                processMacro(QString cmd);
-    void                processXlCommand(QString cmd);
+    void                processXlCommand(QString cmd, bool once = false);
     void                processExit();
 
     void                sendText(QString msg);
@@ -68,7 +67,7 @@ protected:
     void                listMacros();
     void                listHooks();
 
-    void                runXl(QString cmd);
+    void                runXl(QString cmd, bool once = false);
     void                runMacro(QString name);
 
 private:
