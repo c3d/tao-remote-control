@@ -55,6 +55,7 @@ protected:
     void                processCommand(QString cmd);
     void                processSetHook(QString cmd);
     void                processXlCommand(QString cmd);
+    void                processExit();
 
     void                sendText(QString msg);
     void                sendGreetings();

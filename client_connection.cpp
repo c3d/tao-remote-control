@@ -124,6 +124,8 @@ void ClientConnection::processCommand(QString cmd)
 
     if (cmd == "help")
         sendHelp();
+    else if (cmd == "exit" || cmd == "quit" || cmd == "q")
+        processExit();
     else if (setHook.indexIn(cmd) != -1)
         processSetHook(cmd);
     else if (xlCmd.indexIn(cmd) != -1)
@@ -156,6 +158,16 @@ void ClientConnection::processXlCommand(QString cmd)
     xl = xl.trimmed();
     if (!xl.isEmpty())
         setHookCode(xl);
+}
+
+
+void ClientConnection::processExit()
+// ----------------------------------------------------------------------------
+//   Disconnect client session
+// ----------------------------------------------------------------------------
+{
+    sendText("Bye.\n");
+    socket->close();
 }
 
 
