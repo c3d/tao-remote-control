@@ -83,7 +83,7 @@ void ClientConnection::setExecOnce(bool once)
 // ----------------------------------------------------------------------------
 {
     IFTRACE(remotecontrol)
-            debug() << "Set execOnce: " << once << "\n";
+        debug() << "Set execOnce: " << once << "\n";
     HookManager::instance()->hook(currentHook)->execOnce = once;
 }
 
@@ -99,7 +99,11 @@ void ClientConnection::onReadyRead()
         line = socket->readLine();
         if (line.isEmpty())
             break;
-        QString command = QString::fromUtf8(line.constData()).trimmed();
+        pending.append(line);
+        if (!pending.endsWith('\n') && !pending.endsWith('\r'))
+            continue;
+        QString command = QString::fromUtf8(pending.constData()).trimmed();
+        pending.clear();
         if (!command.isEmpty())
             processCommand(command);
         sendPrompt();
@@ -113,7 +117,7 @@ void ClientConnection::processCommand(QString cmd)
 // ----------------------------------------------------------------------------
 {
     IFTRACE(remotecontrol)
-            debug() << "Command received: [" << +cmd << "]\n";
+        debug() << "Command received: [" << +cmd << "]\n";
 
     QRegExp setHook("^#\\d+$"),
             xlCmd("^xl");

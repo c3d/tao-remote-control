@@ -66,6 +66,7 @@ protected:
 private:
     QAbstractSocket *   socket;
     int                 currentHook;
+    QByteArray          pending;
 };
 
 #endif // CLIENT_CONNECTION_H
