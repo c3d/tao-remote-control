@@ -48,11 +48,13 @@ XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
 //    Insertion point for arbitrary commands from remote client
 // ----------------------------------------------------------------------------
 {
-    // First call instanciates server
+    // First call instantiates server
     (void)Server::instance();
 
     Hook * hook = HookManager::instance()->hook(id);
     hook->exec(context, self);
+    tao->refreshOn(hook->refreshEvent, -1.0);
+
     return XL::xl_false;
 }
 

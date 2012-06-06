@@ -66,6 +66,7 @@ private:
 public:
     text                command;
     bool                execOnce;
+    int                 refreshEvent;
 };
 
 

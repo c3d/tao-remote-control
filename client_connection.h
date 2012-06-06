@@ -23,8 +23,9 @@
 // ****************************************************************************
 
 
-#include <QObject>
 #include <QByteArray>
+#include <QMap>
+#include <QObject>
 #include <QString>
 #include <iostream>
 
@@ -54,6 +55,9 @@ protected:
     std::ostream &      debug();
     void                processCommand(QString cmd);
     void                processSetHook(QString cmd);
+    void                processSetMacro(QString cmd);
+    void                processUnsetMacro(QString cmd);
+    void                processMacro(QString cmd);
     void                processXlCommand(QString cmd);
     void                processExit();
 
@@ -61,13 +65,19 @@ protected:
     void                sendGreetings();
     void                sendPrompt();
     void                sendHelp();
+    void                listMacros();
+    void                listHooks();
 
-    void                setHookCode(QString cmd);
+    void                runXl(QString cmd);
+    void                runMacro(QString name);
 
 private:
+    typedef QMap<QString, QString> macro_map;
+
     QAbstractSocket *   socket;
     int                 currentHook;
     QByteArray          pending;
+    macro_map           macros;
 };
 
 #endif // CLIENT_CONNECTION_H

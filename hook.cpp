@@ -24,19 +24,23 @@
 #include "hook.h"
 #include "base.h" // IFTRACE
 #include "runtime.h"
+#include "tao/module_api.h"
 #include <QtGlobal>
+#include <QEvent>
 #include <QString>
 
 
+extern Tao::ModuleApi *tao;
 
 Hook::Hook(int id)
-    : id(id), command(""), execOnce(false)
+    : id(id), command(""), execOnce(false), refreshEvent(-1)
 // ----------------------------------------------------------------------------
 //    Create hook
 // ----------------------------------------------------------------------------
 {
+    refreshEvent = QEvent::registerEventType();
     IFTRACE(remotecontrol)
-        debug() << "Hook created\n";
+        debug() << "Hook created. refreshEvent=" << refreshEvent << ".\n";
 }
 
 
@@ -58,7 +62,8 @@ void Hook::setCommand(text cmd)
     command = cmd;
     IFTRACE(remotecontrol)
         debug() << "XL code set to: " << command << "\n";
-    // TODO: post event to request refresh
+    Q_ASSERT(tao);
+    tao->postEvent(refreshEvent);
 }
 
 

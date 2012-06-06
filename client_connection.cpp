@@ -49,6 +49,10 @@ ClientConnection::ClientConnection(QAbstractSocket *socket)
     IFTRACE(remotecontrol)
         debug() << "New connection\n";
 
+    // Pre-defined macros. Example: command @quit will map to XL code "exit 0".
+    macros["quit"] = "xl exit 0";
+    macros["q"] = "@quit";
+
     Q_ASSERT(socket);
     connect(socket, SIGNAL(readyRead()),
             this, SLOT(onReadyRead()));
@@ -119,16 +123,23 @@ void ClientConnection::processCommand(QString cmd)
     IFTRACE(remotecontrol)
         debug() << "Command received: [" << +cmd << "]\n";
 
-    QRegExp setHook("^#\\d+$"),
-            xlCmd("^xl");
-
-    if (cmd == "help")
+    if (cmd == "help" || cmd == "?")
         sendHelp();
     else if (cmd == "exit" || cmd == "quit" || cmd == "q")
         processExit();
-    else if (setHook.indexIn(cmd) != -1)
+    else if (cmd == "@")
+        listMacros();
+    else if (cmd == "#")
+        listHooks();
+    else if (QRegExp("^#\\d+$").indexIn(cmd) != -1)
         processSetHook(cmd);
-    else if (xlCmd.indexIn(cmd) != -1)
+    else if (cmd.startsWith('@'))
+        processMacro(cmd);
+    else if (QRegExp("^set\\s").indexIn(cmd) != -1)
+        processSetMacro(cmd);
+    else if (QRegExp("^unset\\s").indexIn(cmd) != -1)
+        processUnsetMacro(cmd);
+    else if (QRegExp("^xl\\s").indexIn(cmd) != -1)
         processXlCommand(cmd);
     else
         sendText("Unknown command or syntax error.\n");
@@ -146,6 +157,49 @@ void ClientConnection::processSetHook(QString cmd)
 }
 
 
+void ClientConnection::processSetMacro(QString cmd)
+// ----------------------------------------------------------------------------
+//   Define macro
+// ----------------------------------------------------------------------------
+{
+    QRegExp re("set\\s+(\\w+)\\s+(.*)");
+    if (re.indexIn(cmd) > -1)
+    {
+        QString name = re.cap(1);
+        QString val = re.cap(2).trimmed();
+        macros[name] = val;
+        IFTRACE(remotecontrol)
+            debug() << "Macro defined: @" << +name << " = " << +val << "\n";
+    }
+}
+
+
+void ClientConnection::processUnsetMacro(QString cmd)
+// ----------------------------------------------------------------------------
+//   Un-define macro
+// ----------------------------------------------------------------------------
+{
+    QRegExp re("unset\\s+(\\w+)");
+    if (re.indexIn(cmd) > -1)
+    {
+        QString name = re.cap(1);
+        if (macros.remove(name) != 0)
+        {
+            IFTRACE(remotecontrol)
+                debug() << "Macro @" << +name << " unset\n";
+        }
+    }
+}
+
+void ClientConnection::processMacro(QString cmd)
+// ----------------------------------------------------------------------------
+//   Run macro: @name
+// ----------------------------------------------------------------------------
+{
+    runMacro(cmd.mid(1));
+}
+
+
 void ClientConnection::processXlCommand(QString cmd)
 // ----------------------------------------------------------------------------
 //   Execute raw XL code
@@ -157,7 +211,7 @@ void ClientConnection::processXlCommand(QString cmd)
         xl = xlCmd.cap(1);
     xl = xl.trimmed();
     if (!xl.isEmpty())
-        setHookCode(xl);
+        runXl(xl);
 }
 
 
@@ -208,16 +262,93 @@ void ClientConnection::sendHelp()
 //   Send help text to client
 // ----------------------------------------------------------------------------
 {
-    sendText("Sorry, no help is available.\n");
+    QString help;
+
+#define _H(x) help += QString(x)
+    _H("Commands:\n");
+    _H("  #<integer>\n");
+    _H("      Select current hook.\n");
+    _H("      Example:  #1\n");
+    _H("  #\n");
+    _H("      Show all hooks.\n");
+    _H("  @<name>\n");
+    _H("      Execute macro.\n");
+    _H("      Example:  @quit\n");
+    _H("  @\n");
+    _H("      Show all macros.\n");
+    _H("  set <name> <value>\n");
+    _H("      Define/replace macro.\n");
+    _H("      Example:  set quit xl exit 0\n");
+    _H("  unset <name>\n");
+    _H("      Undefine macro.\n");
+    _H("      Example:  unset quit\n");
+    _H("  xl <code>\n");
+    _H("      Execute XL code.\n");
+    _H("      Example:  xl locally {color \"red\"; circle 0, 0, 100}\n");
+    _H("  help, ?\n");
+    _H("      This help.\n");
+    _H("  quit, q\n");
+    _H("      Disconnect.\n");
+#undef _H
+
+    sendText(help);
 }
 
 
-void ClientConnection::setHookCode(QString cmd)
+void ClientConnection::listMacros()
+// ----------------------------------------------------------------------------
+//   Dump all macros and their definition
+// ----------------------------------------------------------------------------
+{
+    QList<QString> names(macros.keys());
+    foreach (QString name, names)
+    {
+        QString msg = QString("@%1 = %2\n").arg(name).arg(macros[name]);
+        sendText(msg);
+    }
+}
+
+
+void ClientConnection::listHooks()
+// ----------------------------------------------------------------------------
+//   Show all hooks
+// ----------------------------------------------------------------------------
+{
+    QString msg;
+    bool first = true;
+    foreach (int id, HookManager::instance()->ids())
+    {
+        if (!first)
+            msg.append(" ");
+        msg += QString("#%1").arg(id);
+        first = false;
+    }
+    msg += "\n";
+    sendText(msg);
+}
+
+
+void ClientConnection::runXl(QString cmd)
 // ----------------------------------------------------------------------------
 //   Set the XL code to be executed by the hook
 // ----------------------------------------------------------------------------
 {
     HookManager::instance()->hook(currentHook)->setCommand(+cmd);
+}
+
+
+void ClientConnection::runMacro(QString name)
+// ----------------------------------------------------------------------------
+//   Expand macro and run it
+// ----------------------------------------------------------------------------
+{
+    if (!macros.contains(name))
+    {
+        QString err = QString("%1: undefined macro.\n").arg(name);
+        sendText(err);
+        return;
+    }
+    processCommand(macros[name]);
 }
 
 

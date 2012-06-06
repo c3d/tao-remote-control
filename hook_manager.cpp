@@ -53,8 +53,19 @@ void HookManager::remove(int id)
 //    Remove hook from map
 // ----------------------------------------------------------------------------
 {
-    Q_ASSERT(hooks.count(id));
-    hooks.erase(id);
+    Q_ASSERT(hooks.contains(id));
+    hooks.remove(id);
+}
+
+
+QList<int> HookManager::ids()
+// ----------------------------------------------------------------------------
+//    Return all hook IDs in ascending order
+// ----------------------------------------------------------------------------
+{
+    QList<int> ids(hooks.keys());
+    qSort(ids);
+    return ids;
 }
 
 

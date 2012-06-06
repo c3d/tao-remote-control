@@ -25,6 +25,8 @@
 
 #include "base.h"
 #include <QObject>
+#include <QMap>
+#include <QList>
 #include <iostream>
 
 class Hook;
@@ -47,12 +49,13 @@ public:
 public:
     Hook *              hook(int id);
     void                remove(int id);
+    QList<int>          ids();
 
 protected:
     std::ostream &      debug();
 
 protected:
-    typedef std::map <int, Hook *> hook_map;
+    typedef QMap<int, Hook *> hook_map;
     hook_map            hooks;
 
 protected:
