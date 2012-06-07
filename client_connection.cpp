@@ -319,17 +319,16 @@ void ClientConnection::listHooks()
 //   Show all hooks
 // ----------------------------------------------------------------------------
 {
+    HookManager * mgr = HookManager::instance();
+    QList<int> ids = mgr->ids();
     QString msg;
-    bool first = true;
-    foreach (int id, HookManager::instance()->ids())
+    foreach (int id, ids)
     {
-        if (!first)
-            msg.append(" ");
-        msg += QString("#%1").arg(id);
-        first = false;
+        Hook * hook = mgr->hook(id);
+        Q_ASSERT(hook);
+        msg = QString("#%1 %2\n").arg(id).arg(+hook->command);
+        sendText(msg);
     }
-    msg += "\n";
-    sendText(msg);
 }
 
 
