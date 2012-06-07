@@ -33,7 +33,7 @@ module_description "fr",
     description "Permet à un client distant de contrôler l'affichage d'un " &
                 "document Tao (changer de page, désactiver l'affichage, etc.)."
 
-REMOTE_CONTROL_PORT -> 2206
+REMOTE_CONTROL_PORT -> 6560
 
 remote_control_hook Id:integer ->
     remote_control_hook Id, REMOTE_CONTROL_PORT
