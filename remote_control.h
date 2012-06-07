@@ -28,5 +28,6 @@
 // Primitives
 XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self, int id,
                              int port);
+XL::Tree_p remoteControlWriteln(int id, text msg);
 
 #endif // REMOTE_CONTROL_H

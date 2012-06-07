@@ -223,6 +223,9 @@ void ClientConnection::sendText(QString msg)
 //   Send text to client
 // ----------------------------------------------------------------------------
 {
+    if (!socket)
+        return;
+
     msg.replace(QChar('\n'), "\r\n");
     QByteArray ba(msg.toUtf8().constData());
     socket->write(ba);

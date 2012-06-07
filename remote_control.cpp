@@ -22,7 +22,9 @@
 #include "hook.h"
 #include "hook_manager.h"
 #include "server.h"
+#include "client_connection.h"
 #include "tao/module_api.h"
+#include "tao/tao_utf8.h"
 
 using namespace Tao;
 
@@ -56,6 +58,30 @@ XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
     tao->refreshOn(hook->refreshEvent, -1.0);
 
     return XL::xl_false;
+}
+
+
+XL::Tree_p remoteControlWriteln(int id, text msg)
+// ----------------------------------------------------------------------------
+//    Insertion point for arbitrary commands from remote client
+// ----------------------------------------------------------------------------
+{
+    if (!Server::started())
+        return XL::xl_false;
+
+    msg += "\n";
+    bool sent = false;
+    QList<ClientConnection *> clients(Server::instance()->clientConnections());
+    foreach (ClientConnection *client, clients)
+    {
+        if (client->currentHookId() == id)
+        {
+            client->sendText(+msg);
+            sent = true;
+        }
+    }
+
+    return sent ? XL::xl_true : XL::xl_false;
 }
 
 

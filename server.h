@@ -40,6 +40,10 @@ class Server : public QTcpServer
 
 public:
     static Server *     instance(int port = 6560);
+    static bool         started() { return inst; }
+
+public:
+    QList<ClientConnection *> clientConnections();
 
 protected:
     Server(int port);

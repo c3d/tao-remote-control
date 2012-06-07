@@ -31,6 +31,12 @@ PREFIX(RemoteControlHook,  tree, "remote_control_hook",
                 "context. A server is started on the specified port if not "
                 "already running. The identifier is used to dispatch commands "
                 "when several hooks are used."))
+PREFIX(RemoteControlWriteln,  tree, "remote_control_writeln",
+       PARM(id, integer, "Hook identifier")
+       PARM(msg, text, "The message to send to the client"),
+       return remoteControlWriteln(id, msg),
+       SYNOPSIS("Send a message to the clients that are currently connected "
+                "to the specified hook."))
 
 PREFIX(Eval, tree, "eval",
        PARM(code, text, "Code to execute"),

@@ -115,3 +115,11 @@ void Server::onDisconnected()
     clients.remove(socket);
     conn->deleteLater();
 }
+
+QList<ClientConnection *> Server::clientConnections()
+// ----------------------------------------------------------------------------
+//   List all current connections from remote clients
+// ----------------------------------------------------------------------------
+{
+    return clients.values();
+}

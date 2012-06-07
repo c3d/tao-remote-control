@@ -44,6 +44,10 @@ public:
     ClientConnection(QAbstractSocket *socket);
     virtual ~ClientConnection();
 
+public:
+    void                sendText(QString msg);
+    int                 currentHookId() { return currentHook; }
+
 public slots:
     void                setCurrentHookId(int id);
 
@@ -60,7 +64,6 @@ protected:
     void                processXlCommand(QString cmd, bool once = false);
     void                processExit();
 
-    void                sendText(QString msg);
     void                sendGreetings();
     void                sendPrompt();
     void                sendHelp();
