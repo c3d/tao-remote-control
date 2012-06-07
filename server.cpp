@@ -24,19 +24,14 @@
 #include "server.h"
 #include "client_connection.h"
 #include "base.h"
+#include "tao/tao_utf8.h"
 #include <QTcpSocket>
 
 
 Server * Server::inst = NULL;
 
 
-inline std::string operator +(QString s)
-// ----------------------------------------------------------------------------
-//   Convert QString to std::string
-// ----------------------------------------------------------------------------
-{
-    return std::string(s.toUtf8().constData());
-}
+using namespace Tao;
 
 
 Server * Server::instance(int port)

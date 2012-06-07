@@ -25,6 +25,7 @@
 #include "base.h" // IFTRACE
 #include "runtime.h"
 #include "tao/module_api.h"
+#include "tao/tao_utf8.h"
 #include <QtGlobal>
 #include <QEvent>
 #include <QString>
@@ -33,13 +34,7 @@
 extern Tao::ModuleApi *tao;
 
 
-inline std::string operator +(QString s)
-// ----------------------------------------------------------------------------
-//   Convert QString to std::string
-// ----------------------------------------------------------------------------
-{
-    return std::string(s.toUtf8().constData());
-}
+using namespace Tao;
 
 
 Hook::Hook(int id)

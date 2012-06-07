@@ -25,19 +25,14 @@
 #include "hook_manager.h"
 #include "hook.h"
 #include "base.h"
+#include "tao/tao_utf8.h"
 #include <QHostAddress>
 #include <QAbstractSocket>
 #include <QStringList>
 #include <QRegExp>
 
 
-inline std::string operator +(QString s)
-// ----------------------------------------------------------------------------
-//   Convert QString to std::string
-// ----------------------------------------------------------------------------
-{
-    return std::string(s.toUtf8().constData());
-}
+using namespace Tao;
 
 
 ClientConnection::ClientConnection(QAbstractSocket *socket)
