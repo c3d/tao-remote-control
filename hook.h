@@ -25,7 +25,6 @@
 #include "context.h"
 #include "tree.h"
 #include <QObject>
-#include <map>
 #include <iostream>
 
 

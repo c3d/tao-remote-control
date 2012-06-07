@@ -111,12 +111,12 @@ void Server::onDisconnected()
 {
     QTcpSocket * socket = dynamic_cast<QTcpSocket *>(sender());
     Q_ASSERT(socket);
-    Q_ASSERT(clients.count(socket));
+    Q_ASSERT(clients.contains(socket));
 
     IFTRACE(remotecontrol)
         debug() << "Connection closed\n";
 
     ClientConnection * conn = clients[socket];
-    clients.erase(socket);
+    clients.remove(socket);
     conn->deleteLater();
 }

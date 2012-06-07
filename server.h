@@ -23,6 +23,8 @@
 // ****************************************************************************
 
 
+#include <QMap>
+#include <QList>
 #include <QTcpServer>
 #include <iostream>
 
@@ -51,7 +53,7 @@ private slots:
     void                onDisconnected();
 
 private:
-    typedef std::map<QTcpSocket *, ClientConnection *> client_map;
+    typedef QMap<QTcpSocket *, ClientConnection *> client_map;
     client_map          clients;
 
 private:
