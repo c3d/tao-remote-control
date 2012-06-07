@@ -43,13 +43,13 @@ const Tao::ModuleApi *tao = NULL;
 
 
 XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
-                             int id, int /*port*/)
+                             int id, int port)
 // ----------------------------------------------------------------------------
 //    Insertion point for arbitrary commands from remote client
 // ----------------------------------------------------------------------------
 {
     // First call instantiates server
-    (void)Server::instance();
+    (void)Server::instance(port);
 
     Hook * hook = HookManager::instance()->hook(id);
     hook->exec(context, self);

@@ -37,10 +37,10 @@ class Server : public QTcpServer
     Q_OBJECT
 
 public:
-    static Server *     instance();
+    static Server *     instance(int port = 6560);
 
 protected:
-    Server();
+    Server(int port);
     virtual ~Server() {}
 
 protected:

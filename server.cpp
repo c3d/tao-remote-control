@@ -39,20 +39,20 @@ inline std::string operator +(QString s)
 }
 
 
-Server * Server::instance()
+Server * Server::instance(int port)
 // ----------------------------------------------------------------------------
 //    Return server instance or create it
 // ----------------------------------------------------------------------------
 {
     if (!inst)
-        inst = new Server;
+        inst = new Server(port);
     if (!inst->isListening())
         return NULL;
     return inst;
 }
 
 
-Server::Server()
+Server::Server(int port)
 // ----------------------------------------------------------------------------
 //    Start server
 // ----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ Server::Server()
     IFTRACE(remotecontrol)
         debug() << "Starting server\n";
 
-    if (!listen(QHostAddress::Any, 6560) &&
+    if (!listen(QHostAddress::Any, port) &&
         !listen(QHostAddress::Any, 0))
     {
         IFTRACE(remotecontrol)
