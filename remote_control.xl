@@ -23,7 +23,8 @@ module_description
     name "Remote control"
     import_name "RemoteControl"
     description "Allows a remote client to control the display of a Tao " &
-                "document (skip page, blank screen, etc.)."
+                "document through a command line interface (skip page, " &
+                "blank screen, etc.)."
     author "Taodyne SAS"
     website "http://www.taodyne.com"
     version 1.0
@@ -31,11 +32,16 @@ module_description
 module_description "fr",
     name "Contrôle à distance"
     description "Permet à un client distant de contrôler l'affichage d'un " &
-                "document Tao (changer de page, désactiver l'affichage, etc.)."
+                "document Tao grâce à une interface en ligne de commande " &
+                "(changer de page, désactiver l'affichage, etc.)."
 
+// Default TCP port for the command server
 REMOTE_CONTROL_PORT -> 6560
 
 remote_control_hook Id:integer ->
     remote_control_hook Id, REMOTE_CONTROL_PORT
 
 remote_control_hook -> remote_control_hook 0
+
+remote_control_writeln T:text -> remote_control_writeln 0, T
+remote_control_writeln_once T:text -> remote_control_writeln_once 0, T

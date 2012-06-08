@@ -61,13 +61,22 @@ XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
 }
 
 
-XL::Tree_p remoteControlWriteln(int id, text msg)
+struct Once : XL::Info {};
+
+XL::Tree_p remoteControlWriteln(XL::Tree_p self, int id, text msg, bool once)
 // ----------------------------------------------------------------------------
-//    Insertion point for arbitrary commands from remote client
+//    Sent msg to all clients connected to hook # id
 // ----------------------------------------------------------------------------
 {
     if (!Server::started())
         return XL::xl_false;
+
+    if (once)
+    {
+        if (self->GetInfo<Once>())
+            return XL::xl_false;
+        self->SetInfo<Once>(new Once);
+    }
 
     msg += "\n";
     bool sent = false;

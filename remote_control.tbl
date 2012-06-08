@@ -34,10 +34,18 @@ PREFIX(RemoteControlHook,  tree, "remote_control_hook",
 PREFIX(RemoteControlWriteln,  tree, "remote_control_writeln",
        PARM(id, integer, "Hook identifier")
        PARM(msg, text, "The message to send to the client"),
-       return remoteControlWriteln(id, msg),
+       return remoteControlWriteln(self, id, msg, false),
        SYNOPSIS("Send a message to the clients that are currently connected "
                 "to the specified hook."))
+PREFIX(RemoteControlWritelnOnce,  tree, "remote_control_writeln_once",
+       PARM(id, integer, "Hook identifier")
+       PARM(msg, text, "The message to send to the client"),
+       return remoteControlWriteln(self, id, msg, true),
+       SYNOPSIS("Send a message to the clients that are currently connected "
+                "to the specified hook. Message is sent only once, until the "
+                "document is reloaded."))
 
+// Exported, but not documented
 PREFIX(Eval, tree, "eval",
        PARM(code, text, "Code to execute"),
        return Hook::eval(context, self, code),
