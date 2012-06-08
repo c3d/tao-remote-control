@@ -38,10 +38,10 @@ module_description "fr",
 // Default TCP port for the command server
 REMOTE_CONTROL_PORT -> 6560
 
-remote_control_hook Id:integer ->
-    remote_control_hook Id, REMOTE_CONTROL_PORT
+rc_hook Id:integer ->
+    rc_hook Id, REMOTE_CONTROL_PORT
 
-remote_control_hook -> remote_control_hook 0
+rc_hook -> rc_hook 0
 
-remote_control_writeln T:text -> remote_control_writeln 0, T
-remote_control_writeln_once T:text -> remote_control_writeln_once 0, T
+rc_writeln T:text -> rc_writeln 0, T
+rc_writeln_once T:text -> rc_writeln_once 0, T

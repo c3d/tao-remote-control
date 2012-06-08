@@ -23,7 +23,7 @@
 #include "remote_control.h"
 #include "hook.h"
 
-PREFIX(RemoteControlHook,  tree, "remote_control_hook",
+PREFIX(RemoteControlHook,  tree, "rc_hook",
        PARM(id, integer, "Hook identifier")
        PARM(port, integer, "TCP port (listen)"),
        return remoteControlHook(context, self, id, port),
@@ -31,13 +31,13 @@ PREFIX(RemoteControlHook,  tree, "remote_control_hook",
                 "context. A server is started on the specified port if not "
                 "already running. The identifier is used to dispatch commands "
                 "when several hooks are used."))
-PREFIX(RemoteControlWriteln,  tree, "remote_control_writeln",
+PREFIX(RemoteControlWriteln,  tree, "rc_writeln",
        PARM(id, integer, "Hook identifier")
        PARM(msg, text, "The message to send to the client"),
        return remoteControlWriteln(self, id, msg, false),
        SYNOPSIS("Send a message to the clients that are currently connected "
                 "to the specified hook."))
-PREFIX(RemoteControlWritelnOnce,  tree, "remote_control_writeln_once",
+PREFIX(RemoteControlWritelnOnce,  tree, "rc_writeln_once",
        PARM(id, integer, "Hook identifier")
        PARM(msg, text, "The message to send to the client"),
        return remoteControlWriteln(self, id, msg, true),
