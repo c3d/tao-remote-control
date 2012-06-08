@@ -45,15 +45,20 @@ ClientConnection::ClientConnection(QAbstractSocket *socket)
         debug() << "New connection\n";
 
     // Pre-defined macros. Example: command @quit will map to XL code "exit 0".
-    macros["quit"] = "xl exit 0";
-    macros["q"] = "@quit";
-    macros["next_page"] = "xl! if page_number<page_count then "
-                          "goto_page page_name (page_number+1)";
-    macros["prev_page"] = "xl! if page_number>1 then "
-                          "goto_page page_name (page_number-1)";
-    macros["play"]  = "xl! enable_animations true";
-    macros["pause"] = "xl! enable_animations false";
-    macros["blank"] = "xl! toggle_blank_screen";
+    macros["quit"]    = "xl exit 0";
+    macros["q"]       = "@quit";
+    macros["nextp"]   = "xl! if page_number<page_count then "
+                        "goto_page page_name (page_number+1)";
+    macros["prevp"]   = "xl! if page_number>1 then "
+                        "goto_page page_name (page_number-1)";
+    macros["play"]    = "xl! enable_animations true";
+    macros["pause"]   = "xl! enable_animations false";
+    macros["blank"]   = "xl! blank_screen true";
+    macros["noblank"] = "xl! blank_screen false";
+    macros["tblank"]  = "xl! toggle_blank_screen";
+    macros["fs"]      = "xl! full_screen true";
+    macros["nofs"]    = "xl! full_screen false";
+    macros["tfs"]     = "xl! toggle_full_screen";
 
     Q_ASSERT(socket);
     connect(socket, SIGNAL(readyRead()),
@@ -130,6 +135,8 @@ void ClientConnection::processCommand(QString cmd)
         processSetMacro(cmd);
     else if (QRegExp("^unset\\s").indexIn(cmd) != -1)
         processUnsetMacro(cmd);
+    else if (cmd == "xl" || cmd == "xl!")
+        runXl("");
     else if (QRegExp("^xl\\s").indexIn(cmd) != -1)
         processXlCommand(cmd);
     else if (QRegExp("^xl!\\s").indexIn(cmd) != -1)
@@ -284,11 +291,13 @@ void ClientConnection::sendHelp()
     _H("  xl <code>\n");
     _H("      Execute XL code. Any occurrence of remote_control_hook for\n");
     _H("      the current hook becomes equivalent to the specified code.\n");
+    _H("      If <code> is empty, hook evaluates to false.");
     _H("      Example:  xl locally {color \"red\"; circle 0, 0, 100}\n");
     _H("  xl! <code>\n");
     _H("      Execute XL code once. Any occurence of remote_control_hook\n");
     _H("      for the current hook will execute the specified code at most\n");
     _H("      once.\n");
+    _H("      If <code> is empty, hook evaluates to false.");
     _H("      Example:  xl! if page_number>1 then goto_page page_name (page_number-1)\n");
     _H("  help, ?\n");
     _H("      Show this help.\n");
@@ -308,7 +317,7 @@ void ClientConnection::listMacros()
     QList<QString> names(macros.keys());
     foreach (QString name, names)
     {
-        QString msg = QString("@%1 = %2\n").arg(name).arg(macros[name]);
+        QString msg = QString(" @%1 = %2\n").arg(name).arg(macros[name]);
         sendText(msg);
     }
 }
@@ -326,7 +335,7 @@ void ClientConnection::listHooks()
     {
         Hook * hook = mgr->hook(id);
         Q_ASSERT(hook);
-        msg = QString("#%1 %2\n").arg(id).arg(+hook->command);
+        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->command);
         sendText(msg);
     }
 }
