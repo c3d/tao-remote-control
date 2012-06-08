@@ -38,5 +38,10 @@ QT          += core network
 # License: LGPL
 INSTALLS    += thismod_icon
 
+QMAKE_SUBSTITUTES = doc/Doxyfile.in
+DOXYFILE = doc/Doxyfile
+DOXYLANG = en,fr
+include(../modules_doc.pri)
+
 LICENSE_FILES = remote_control.taokey.notsigned
 include(../licenses.pri)
