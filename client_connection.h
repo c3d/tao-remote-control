@@ -47,6 +47,7 @@ public:
 public:
     void                sendText(QString msg);
     int                 currentHookId() { return currentHook; }
+    void                disconnect(QString msg);
 
 public slots:
     void                setCurrentHookId(int id);

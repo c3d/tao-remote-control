@@ -25,38 +25,66 @@
 #include "client_connection.h"
 #include "base.h"
 #include "tao/tao_utf8.h"
+#include "tao/module_api.h"
+#include <QString>
 #include <QTcpSocket>
+#include <QTimer>
 
 
 Server * Server::inst = NULL;
+
+// Licensing
+#define LICNAME "RemoteControl 1.0"
+#define EVAL_MINUTES 5
+#define STRINGIFY(s) #s
+#define TOSTR(s) STRINGIFY(s)
+static const QString licMsg("You have no valid license for " LICNAME ".\n"
+                            "As a result, this module may only be used for "
+                            TOSTR(EVAL_MINUTES)
+                            " minutes after the application is started.\n");
 
 
 using namespace Tao;
 
 
-Server * Server::instance(int port)
+Server * Server::instance(const Tao::ModuleApi *tao, int port)
 // ----------------------------------------------------------------------------
 //    Return server instance or create it
 // ----------------------------------------------------------------------------
 {
     if (!inst)
-        inst = new Server(port);
-    if (!inst->isListening())
-        return NULL;
+        inst = new Server(tao, port);
     return inst;
 }
 
 
-Server::Server(int port)
+Server::Server(const ModuleApi *tao, int port)
 // ----------------------------------------------------------------------------
 //    Start server
 // ----------------------------------------------------------------------------
+    : tao(tao)
 {
+    licensed = tao->checkImpressOrLicense(LICNAME);
+    if (!licensed)
+    {
+        IFTRACE2(remotecontrol, lic)
+            debug() << "Unlicensed\n";
+        double expires = (EVAL_MINUTES*60 - tao->taoRunTime()) * 1000;
+        if (expires < 0)
+        {
+            IFTRACE2(remotecontrol, lic)
+                debug() << "Evaluation period expired, not listening.\n";
+            return;
+        }
+        IFTRACE2(remotecontrol, lic)
+            debug() << "Evaluation expires in " << expires << " ms\n";
+        QTimer::singleShot(expires, this, SLOT(disconnectNoLicense()));
+    }
+
     IFTRACE(remotecontrol)
         debug() << "Starting server\n";
 
-    if (!listen(QHostAddress::Any, port) &&
-        !listen(QHostAddress::Any, 0))
+    if (!listen(QHostAddress::Any, port) && !listen(QHostAddress::Any, 0))
     {
         IFTRACE(remotecontrol)
             debug() << "Server failed to start\n";
@@ -88,6 +116,19 @@ void Server::onNewConnection()
     QTcpSocket * socket = nextPendingConnection();
     Q_ASSERT(socket);
 
+    if (!licensed && tao->taoRunTime() > 30)
+    {
+        IFTRACE2(remotecontrol, lic)
+            debug() << "Rejecting connection due to missing license\n";
+        QString msg(licMsg);
+        msg.replace(QChar('\n'), "\r\n");
+        QByteArray ba(msg.toUtf8().constData());
+        socket->write(ba);
+        socket->flush();
+        socket->deleteLater();
+        return;
+    }
+
     IFTRACE(remotecontrol)
         debug() << "New connection accepted\n";
 
@@ -95,7 +136,6 @@ void Server::onNewConnection()
     connect(socket, SIGNAL(disconnected()),
             this, SLOT(onDisconnected()));
     clients[socket] = conn;
-
 }
 
 
@@ -116,10 +156,24 @@ void Server::onDisconnected()
     conn->deleteLater();
 }
 
+
 QList<ClientConnection *> Server::clientConnections()
 // ----------------------------------------------------------------------------
 //   List all current connections from remote clients
 // ----------------------------------------------------------------------------
 {
     return clients.values();
+}
+
+
+void Server::disconnectNoLicense()
+// ----------------------------------------------------------------------------
+//   Close connection with all clients
+// ----------------------------------------------------------------------------
+{
+    IFTRACE2(remotecontrol, lic)
+        debug() << "Evaluation period expired, closing client connections\n";
+
+    foreach (ClientConnection * client, clients.values())
+        client->disconnect("\n" + licMsg + "Closing connection.\n");
 }

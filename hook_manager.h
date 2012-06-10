@@ -57,6 +57,7 @@ protected:
 protected:
     typedef QMap<int, Hook *> hook_map;
     hook_map            hooks;
+    bool                licensed;
 
 protected:
     static

@@ -23,6 +23,7 @@
 // ****************************************************************************
 
 
+#include "tao/module_api.h"
 #include <QMap>
 #include <QList>
 #include <QTcpServer>
@@ -39,14 +40,17 @@ class Server : public QTcpServer
     Q_OBJECT
 
 public:
-    static Server *     instance(int port = 6560);
+    static Server *     instance(const Tao::ModuleApi *tao, int port = 6560);
     static bool         started() { return inst; }
 
 public:
     QList<ClientConnection *> clientConnections();
 
+public slots:
+    void                      disconnectNoLicense();
+
 protected:
-    Server(int port);
+    Server(const Tao::ModuleApi *tao, int port);
     virtual ~Server() {}
 
 protected:
@@ -58,6 +62,8 @@ private slots:
 
 private:
     typedef QMap<QTcpSocket *, ClientConnection *> client_map;
+    const Tao::ModuleApi * tao;
+    bool                licensed;
     client_map          clients;
 
 private:

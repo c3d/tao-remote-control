@@ -25,4 +25,5 @@
 #endif
 
 TRACE(builtins)
+TRACE(lic)
 TRACE(remotecontrol)

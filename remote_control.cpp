@@ -33,16 +33,6 @@ using namespace Tao;
 const Tao::ModuleApi *tao = NULL;
 
 
-//static bool hasLicence()
-//// ----------------------------------------------------------------------------
-////   Check if we have a valid licence for this feature
-//// ----------------------------------------------------------------------------
-//{
-//    static bool result = tao->checkImpressOrLicense("RemoteControl 1.0");
-//    return result;
-//}
-
-
 
 XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
                              int id, int port)
@@ -51,7 +41,7 @@ XL::Tree_p remoteControlHook(XL::Context *context, XL::Tree_p self,
 // ----------------------------------------------------------------------------
 {
     // First call instantiates server
-    (void)Server::instance(port);
+    (void)Server::instance(tao, port);
 
     Hook * hook = HookManager::instance()->hook(id);
     hook->exec(context, self);
@@ -80,7 +70,8 @@ XL::Tree_p remoteControlWriteln(XL::Tree_p self, int id, text msg, bool once)
 
     msg += "\n";
     bool sent = false;
-    QList<ClientConnection *> clients(Server::instance()->clientConnections());
+    QList<ClientConnection *> clients;
+    clients = Server::instance(tao)->clientConnections();
     foreach (ClientConnection *client, clients)
     {
         if (client->currentHookId() == id)

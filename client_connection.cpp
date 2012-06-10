@@ -365,6 +365,16 @@ void ClientConnection::runMacro(QString name)
 }
 
 
+void ClientConnection::disconnect(QString msg)
+// ----------------------------------------------------------------------------
+//   Disconnect client
+// ----------------------------------------------------------------------------
+{
+    sendText(msg);
+    socket->close();
+}
+
+
 std::ostream & ClientConnection::debug()
 // ----------------------------------------------------------------------------
 //   Convenience method to log with a common prefix
