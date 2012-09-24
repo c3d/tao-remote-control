@@ -27,11 +27,8 @@
 #include "tao/module_api.h"
 #include "tao/tao_utf8.h"
 #include <QtGlobal>
-#include <QCoreApplication>
 #include <QEvent>
-#include <QMutexLocker>
 #include <QString>
-#include <QThread>
 
 
 extern Tao::ModuleApi *tao;
@@ -41,7 +38,7 @@ using namespace Tao;
 
 
 Hook::Hook(int id)
-    : id(id), execOnce(false), onceCounter(0), refreshEvent(-1)
+    : id(id), command(""), execOnce(false), onceCounter(0), refreshEvent(-1)
 // ----------------------------------------------------------------------------
 //    Create hook
 // ----------------------------------------------------------------------------
@@ -57,46 +54,30 @@ XL::Tree_p Hook::exec(XL::Context *context, XL::Tree_p self)
 //    Execute XL code associated with this hook
 // ----------------------------------------------------------------------------
 {
-    text code = command();
-    return evalInternal(context, self, (code != "") ? code : "false",
+    return evalInternal(context, self, (command != "") ? command : "false",
                         execOnce);
 }
 
 
-void Hook::setCommand(QString cmd, bool once)
+void Hook::setCommand(text cmd, bool once)
 // ----------------------------------------------------------------------------
 //    Set command to be run by this hook
 // ----------------------------------------------------------------------------
 {
-    // Call from main thread only, because ModuleApi::postEvent is not supposed
-    // to be thread-safe. It also serializes access to this->cmd.
-    Q_ASSERT(QThread::currentThread() == qApp->thread());
-    QMutexLocker locker(&mutex);
-
     execOnce = once;
     if (execOnce)
     {
         // Append a string that will differ each time a "once" command is set
         // See evalInternal()
         QString tag = QString(" /* %1 */").arg(onceCounter++);
-        cmd += tag;
+        cmd += +tag;
     }
-    this->cmd = +cmd;
-    IFTRACE(remotecontrolcode)
+    command = cmd;
+    IFTRACE(remotecontrol)
         debug() << "once=" << execOnce
-                << " XL code set to: " << this->cmd << "\n";
+                << " XL code set to: " << command << "\n";
     Q_ASSERT(tao);
-    tao->postEventOnce(refreshEvent);
-}
-
-
-text Hook::command()
-// ----------------------------------------------------------------------------
-//    Return the current command (thread safe)
-// ----------------------------------------------------------------------------
-{
-    QMutexLocker locker(&mutex);
-    return text(cmd);
+    tao->postEvent(refreshEvent);
 }
 
 
