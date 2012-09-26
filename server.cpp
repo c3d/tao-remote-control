@@ -84,7 +84,20 @@ Server::Server(const ModuleApi *tao, int port)
     IFTRACE(remotecontrol)
         debug() << "Starting server\n";
 
-    if (!listen(QHostAddress::Any, port) && !listen(QHostAddress::Any, 0))
+    // Accept connection over IPv4 or IPv6
+    QHostAddress address = QHostAddress::Any;
+
+#if QT_VERSION < 0x050000  // Qt4
+#  if defined(Q_OS_MACX) || defined(Q_OS_LINUX)
+    // AnyIPv6 is v4 + v6, while Any is v4 only.
+    address = QHostAddress::AnyIPv6;
+#  else
+    // With Qt4/Windows, AnyIPv6 is v6 only and Any is v4 only. There is
+    // no simple way to do both v4 and v6, so keep v4 only.
+#  endif
+#endif
+
+    if (!listen(address, port) && !listen(address, 0))
     {
         IFTRACE(remotecontrol)
             debug() << "Server failed to start\n";
