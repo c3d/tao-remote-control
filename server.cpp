@@ -129,7 +129,7 @@ void Server::onNewConnection()
     QTcpSocket * socket = nextPendingConnection();
     Q_ASSERT(socket);
 
-    if (!licensed && tao->taoRunTime() > 30)
+    if (!licensed && tao->taoRunTime() > (EVAL_MINUTES*60))
     {
         IFTRACE2(remotecontrol, lic)
             debug() << "Rejecting connection due to missing license\n";
