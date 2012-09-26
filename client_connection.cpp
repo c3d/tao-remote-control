@@ -291,13 +291,13 @@ void ClientConnection::sendHelp()
     _H("  xl <code>\n");
     _H("      Execute XL code. Any occurrence of remote_control_hook for\n");
     _H("      the current hook becomes equivalent to the specified code.\n");
-    _H("      If <code> is empty, hook evaluates to false.");
+    _H("      If <code> is empty, hook evaluates to false.\n");
     _H("      Example:  xl locally {color \"red\"; circle 0, 0, 100}\n");
     _H("  xl! <code>\n");
     _H("      Execute XL code once. Any occurence of remote_control_hook\n");
     _H("      for the current hook will execute the specified code at most\n");
     _H("      once.\n");
-    _H("      If <code> is empty, hook evaluates to false.");
+    _H("      If <code> is empty, hook evaluates to false.\n");
     _H("      Example:  xl! if page_number>1 then goto_page page_name (page_number-1)\n");
     _H("  help, ?\n");
     _H("      Show this help.\n");
