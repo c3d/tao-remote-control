@@ -77,7 +77,7 @@ void Hook::setCommand(text cmd, bool once)
         debug() << "once=" << execOnce
                 << " XL code set to: " << command << "\n";
     Q_ASSERT(tao);
-    tao->postEvent(refreshEvent);
+    tao->postEventOnce(refreshEvent);
 }
 
 
