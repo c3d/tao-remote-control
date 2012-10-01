@@ -31,28 +31,25 @@
 
 class Hook;
 
-class HookManager : public QObject
+class HookManager
 // ----------------------------------------------------------------------------
 //   Singleton to manage a collection of Hooks
 // ----------------------------------------------------------------------------
 {
-    Q_OBJECT
-
 public:
     HookManager();
-    virtual ~HookManager() {}
+    virtual ~HookManager();
 
 public:
     static
     HookManager *       instance();
+    static
+    void                destroy() { if (inst) { delete inst; inst = NULL; } }
 
 public:
     Hook *              hook(int id);
     void                remove(int id);
     QList<int>          ids();
-
-protected:
-    std::ostream &      debug();
 
 protected:
     typedef QMap<int, Hook *> hook_map;
