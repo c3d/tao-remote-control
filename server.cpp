@@ -106,20 +106,8 @@ Server::Server(const ModuleApi *tao, int port)
     IFTRACE(remotecontrol)
         debug() << "Bound to " << +serverAddress().toString()
                 << ":" << serverPort() << "\n";
-}
-
-
-Server::~Server()
-// ----------------------------------------------------------------------------
-//   Stop server, close all sockets
-// ----------------------------------------------------------------------------
-{
-    IFTRACE(remotecontrol)
-        debug() << "Stopping\n";
-    close();
-    foreach (ClientConnection *c, clients)
-        delete c;
-    clients.clear();
+    connect(this, SIGNAL(newConnection()),
+            this, SLOT(onNewConnection()));
 }
 
 
@@ -133,50 +121,52 @@ std::ostream & Server::debug()
 }
 
 
-void Server::incomingConnection(int sd)
+void Server::onNewConnection()
 // ----------------------------------------------------------------------------
 //   Accept new incoming connection
 // ----------------------------------------------------------------------------
 {
+    QTcpSocket * socket = nextPendingConnection();
+    Q_ASSERT(socket);
+
     if (!licensed && tao->taoRunTime() > (EVAL_MINUTES*60))
     {
-        QTcpSocket socket;
-        socket.setSocketDescriptor(sd);
         IFTRACE2(remotecontrol, lic)
             debug() << "Rejecting connection due to missing license\n";
         QString msg(licMsg);
         msg.replace(QChar('\n'), "\r\n");
         QByteArray ba(msg.toUtf8().constData());
-        socket.write(ba);
-        socket.flush();
+        socket->write(ba);
+        socket->flush();
+        socket->deleteLater();
         return;
     }
 
     IFTRACE(remotecontrol)
         debug() << "New connection accepted\n";
 
-    ClientConnection * conn = new ClientConnection(sd);
-    clients.insert(conn);
-    conn->moveToThread(conn);
-    connect(conn, SIGNAL(disconnected()),
+    ClientConnection * conn = new ClientConnection(socket);
+    connect(socket, SIGNAL(disconnected()),
             this, SLOT(onDisconnected()));
-    conn->start();
+    clients[socket] = conn;
 }
 
 
 void Server::onDisconnected()
 // ----------------------------------------------------------------------------
-//   Connection closed
+//   Accept new incoming connection
 // ----------------------------------------------------------------------------
 {
-    ClientConnection * conn = dynamic_cast<ClientConnection *>(sender());
-    Q_ASSERT(conn);
-    Q_ASSERT(clients.contains(conn));
+    QTcpSocket * socket = dynamic_cast<QTcpSocket *>(sender());
+    Q_ASSERT(socket);
+    Q_ASSERT(clients.contains(socket));
 
     IFTRACE(remotecontrol)
-        debug() << "Deleting connection\n";
-    clients.remove(conn);
-    delete conn;
+        debug() << "Connection closed\n";
+
+    ClientConnection * conn = clients[socket];
+    clients.remove(socket);
+    conn->deleteLater();
 }
 
 
@@ -197,10 +187,6 @@ void Server::disconnectNoLicense()
     IFTRACE2(remotecontrol, lic)
         debug() << "Evaluation period expired, closing client connections\n";
 
-    QString msg("\n" + licMsg + "Closing connection.\n");
     foreach (ClientConnection * client, clients.values())
-    {
-        QMetaObject::invokeMethod(client, "disconnect", Qt::QueuedConnection,
-                                  Q_ARG(QString, msg));
-    }
+        client->disconnect("\n" + licMsg + "Closing connection.\n");
 }
