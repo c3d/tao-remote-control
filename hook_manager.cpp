@@ -27,10 +27,18 @@
 #include "runtime.h"
 #include <QtGlobal>
 #include <QString>
-#include <QCoreApplication>
 
 
 HookManager * HookManager::inst = NULL;
+
+
+inline std::string operator +(QString s)
+// ----------------------------------------------------------------------------
+//   Convert QString to std::string
+// ----------------------------------------------------------------------------
+{
+    return std::string(s.toUtf8().constData());
+}
 
 
 HookManager::HookManager()
@@ -38,16 +46,6 @@ HookManager::HookManager()
 //    Constructor
 // ----------------------------------------------------------------------------
 {}
-
-
-HookManager::~HookManager()
-// ----------------------------------------------------------------------------
-//    Delete hooks
-// ----------------------------------------------------------------------------
-{
-    foreach (Hook *hook, hooks.values())
-        delete hook;
-}
 
 
 void HookManager::remove(int id)
@@ -88,16 +86,16 @@ Hook * HookManager::hook(int id)
 // ----------------------------------------------------------------------------
 {
     if (!hooks.count(id))
-    {
-        Hook *hook = new Hook(id);
-        // Make sure the hook's event loop runs in the main thread (see
-        // Hook::setCommand()).
-        // This is naturally the case when we're called from the XL primitive
-        // (remoteControlHook()), but not when the Hook instance is created
-        // by a Connection object (which runs its own event loop in its own
-        // thread).
-        hook->moveToThread(qApp->thread());
-        hooks[id] = hook;
-    }
+        hooks[id] = new Hook(id);
     return hooks[id];
+}
+
+
+std::ostream & HookManager::debug()
+// ----------------------------------------------------------------------------
+//   Convenience method to log with a common prefix
+// ----------------------------------------------------------------------------
+{
+    std::cerr << "[HookManager] ";
+    return std::cerr;
 }
