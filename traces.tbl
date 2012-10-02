@@ -26,6 +26,4 @@
 
 TRACE(builtins)
 TRACE(lic)
-TRACE(remotecontrol)     // All traces except commands and code updates
-TRACE(remotecontrolcmd)  // Commands received from clients
-TRACE(remotecontrolcode) // Hook code updates
+TRACE(remotecontrol)
