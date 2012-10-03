@@ -24,6 +24,7 @@
 
 #include "context.h"
 #include "tree.h"
+#include <QMutex>
 #include <QObject>
 #include <iostream>
 
@@ -50,7 +51,10 @@ public:
 public:
     XL::Tree_p          exec(XL::Context *context, XL::Tree_p self);
 
-    void                setCommand(text cmd, bool once = false);
+    text                command();
+
+public slots:
+    void                setCommand(QString cmd, bool once = false);
 
 protected:
     static
@@ -61,11 +65,12 @@ protected:
     std::ostream &      debug();
 
 private:
+    QMutex              mutex;
     int                 id;
-public:
-    text                command;
+    text                cmd;
     bool                execOnce;
     int                 onceCounter;
+public:
     int                 refreshEvent;
 };
 

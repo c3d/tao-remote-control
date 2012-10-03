@@ -76,7 +76,11 @@ XL::Tree_p remoteControlWriteln(XL::Tree_p self, int id, text msg, bool once)
     {
         if (client->currentHookId() == id)
         {
-            client->sendText(+msg);
+            // If we were to call client->sendText(+msg) synchronously, we may
+            // end up with mangled text because the ClientConnection thread
+            // might be currently writing to the socket.
+            QMetaObject::invokeMethod(client, "sendText", Qt::QueuedConnection,
+                                      Q_ARG(QString, +msg));
             sent = true;
         }
     }
@@ -108,6 +112,8 @@ int module_exit()
 //   Uninitialize the Tao module
 // ----------------------------------------------------------------------------
 {
+    Server::destroy();
+    HookManager::destroy();
     return 0;
 }
 
