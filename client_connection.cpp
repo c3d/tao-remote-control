@@ -30,16 +30,17 @@
 #include <QAbstractSocket>
 #include <QStringList>
 #include <QRegExp>
+#include <QTcpSocket>
 
 
 using namespace Tao;
 
 
-ClientConnection::ClientConnection(QAbstractSocket *socket)
+ClientConnection::ClientConnection(int socketDescriptor)
 // ----------------------------------------------------------------------------
 //   Creation
 // ----------------------------------------------------------------------------
-    : socket(socket), currentHook(0)
+    : socket(NULL), socketDescriptor(socketDescriptor), currentHook(0)
 {
     IFTRACE(remotecontrol)
         debug() << "New connection\n";
@@ -59,12 +60,6 @@ ClientConnection::ClientConnection(QAbstractSocket *socket)
     macros["fs"]      = "xl! full_screen true";
     macros["nofs"]    = "xl! full_screen false";
     macros["tfs"]     = "xl! toggle_full_screen";
-
-    Q_ASSERT(socket);
-    connect(socket, SIGNAL(readyRead()),
-            this, SLOT(onReadyRead()));
-
-    sendGreetings();
 }
 
 
@@ -73,18 +68,32 @@ ClientConnection::~ClientConnection()
 //   Delete connection
 // ----------------------------------------------------------------------------
 {
+    Q_ASSERT(QThread::currentThread() != thread());
+
     IFTRACE(remotecontrol)
-        debug() << "Deleting\n";
-    delete socket;
+        debug() << "Stopping thread\n";
+    quit();
+    wait();
+    IFTRACE(remotecontrol)
+        debug() << "Deleting socket\n";
+    QTcpSocket *s = socket;
+    socket = NULL;
+    s->deleteLater(); // delete in this object's thread
 }
 
 
-void ClientConnection::setCurrentHookId(int id)
+void ClientConnection::onDisconnected()
 // ----------------------------------------------------------------------------
-//   Direct subsequent commands to hook id
+//   Tell thread to quit and forward signal
 // ----------------------------------------------------------------------------
 {
-    currentHook = id;
+    IFTRACE(remotecontrol)
+        debug() << "Disconnected\n";
+    if (socket)
+    {
+        // Don't notify server if it is the server that is deleting us
+        emit disconnected();
+    }
 }
 
 
@@ -116,7 +125,7 @@ void ClientConnection::processCommand(QString cmd)
 //   Decode command and dispatch it to appropriate hook
 // ----------------------------------------------------------------------------
 {
-    IFTRACE(remotecontrol)
+    IFTRACE(remotecontrolcmd)
         debug() << "Command [" << +cmd << "]\n";
 
     if (cmd == "help" || cmd == "?")
@@ -230,8 +239,9 @@ void ClientConnection::sendText(QString msg)
 //   Send text to client
 // ----------------------------------------------------------------------------
 {
-    if (!socket)
-        return;
+    // Don't call from a thread that is not the connection thread, or text
+    // could possibly be mangled
+    Q_ASSERT(QThread::currentThread() == thread());
 
     msg.replace(QChar('\n'), "\r\n");
     QByteArray ba(msg.toUtf8().constData());
@@ -291,13 +301,13 @@ void ClientConnection::sendHelp()
     _H("  xl <code>\n");
     _H("      Execute XL code. Any occurrence of remote_control_hook for\n");
     _H("      the current hook becomes equivalent to the specified code.\n");
-    _H("      If <code> is empty, hook evaluates to false.");
+    _H("      If <code> is empty, hook evaluates to false.\n");
     _H("      Example:  xl locally {color \"red\"; circle 0, 0, 100}\n");
     _H("  xl! <code>\n");
     _H("      Execute XL code once. Any occurence of remote_control_hook\n");
     _H("      for the current hook will execute the specified code at most\n");
     _H("      once.\n");
-    _H("      If <code> is empty, hook evaluates to false.");
+    _H("      If <code> is empty, hook evaluates to false.\n");
     _H("      Example:  xl! if page_number>1 then goto_page page_name (page_number-1)\n");
     _H("  help, ?\n");
     _H("      Show this help.\n");
@@ -335,7 +345,7 @@ void ClientConnection::listHooks()
     {
         Hook * hook = mgr->hook(id);
         Q_ASSERT(hook);
-        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->command);
+        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->command());
         sendText(msg);
     }
 }
@@ -346,7 +356,10 @@ void ClientConnection::runXl(QString cmd, bool once)
 //   Set the XL code to be executed by the hook
 // ----------------------------------------------------------------------------
 {
-    HookManager::instance()->hook(currentHook)->setCommand(+cmd, once);
+    Hook *hook = HookManager::instance()->hook(currentHook);
+    // Call setCommand from the main thread
+    QMetaObject::invokeMethod(hook, "setCommand", Qt::QueuedConnection,
+                              Q_ARG(QString, cmd), Q_ARG(bool, once));
 }
 
 
@@ -374,6 +387,30 @@ void ClientConnection::disconnect(QString msg)
     socket->close();
 }
 
+
+void ClientConnection::run()
+// ----------------------------------------------------------------------------
+//   Entry point for the connection thread
+// ----------------------------------------------------------------------------
+{
+    IFTRACE(remotecontrol)
+        debug() << "Thread starting\n";
+
+    socket = new QTcpSocket();
+    if (!socket->setSocketDescriptor(socketDescriptor))
+    {
+        IFTRACE(remotecontrol)
+            debug() << "Socket error: " << socket->error() << "\n";
+        delete socket;
+        return;
+    }
+    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+
+    sendGreetings();
+
+    exec();
+}
 
 std::ostream & ClientConnection::debug()
 // ----------------------------------------------------------------------------
