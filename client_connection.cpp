@@ -40,8 +40,7 @@ ClientConnection::ClientConnection(int socketDescriptor)
 // ----------------------------------------------------------------------------
 //   Creation
 // ----------------------------------------------------------------------------
-    : socket(NULL), socketDescriptor(socketDescriptor), currentHook(0),
-      prompt(true)
+    : socket(NULL), socketDescriptor(socketDescriptor), currentHook(0)
 {
     IFTRACE(remotecontrol)
         debug() << "New connection\n";
@@ -151,8 +150,6 @@ void ClientConnection::processCommand(QString cmd)
         processXlCommand(cmd);
     else if (QRegExp("^xl!\\s").indexIn(cmd) != -1)
         processXlCommand(cmd, true);
-    else if (cmd.startsWith("prompt"))
-        processPromptCommand(cmd);
     else
         sendText("Unknown command or syntax error.\n");
 }
@@ -227,26 +224,6 @@ void ClientConnection::processXlCommand(QString cmd, bool once)
 }
 
 
-void ClientConnection::processPromptCommand(QString cmd)
-// ----------------------------------------------------------------------------
-//   Disable, enable or toggle the prompt (#0>)
-// ----------------------------------------------------------------------------
-{
-    QString parm;
-    QRegExp re = QRegExp("prompt(.*)");
-    if (re.indexIn(cmd) > -1)
-        parm = re.cap(1).trimmed();
-    if (parm == "")
-        prompt = !prompt;
-    else if (parm == "on")
-        prompt = true;
-    else if (parm == "off")
-        prompt = false;
-    else
-        sendText("Invalid parameter: " + parm + "\n");
-}
-
-
 void ClientConnection::processExit()
 // ----------------------------------------------------------------------------
 //   Disconnect client session
@@ -267,24 +244,18 @@ void ClientConnection::sendText(QString msg)
     Q_ASSERT(QThread::currentThread() == thread());
 
     msg.replace(QChar('\n'), "\r\n");
-    IFTRACE(remotecontrolcmd)
-        debug() << "Sending: [" << +msg << "]";
     QByteArray ba(msg.toUtf8().constData());
     socket->write(ba);
-    socket->flush();
 }
 
 
 void ClientConnection::sendPrompt()
 // ----------------------------------------------------------------------------
-//   Send prompt to client
+//   Send help text to client
 // ----------------------------------------------------------------------------
 {
-    if (prompt)
-    {
-        QString prompt = QString("#%1> ").arg(currentHook);
-        sendText(prompt);
-    }
+    QString prompt = QString("#%1> ").arg(currentHook);
+    sendText(prompt);
 }
 
 
@@ -293,8 +264,7 @@ void ClientConnection::sendGreetings()
 //   Send text to newly connected client
 // ----------------------------------------------------------------------------
 {
-    QString msg("Tao Presentations Remote Control Server version "
-                MODVERSION " ready.\n");
+    QString msg("Tao Presentations Remote Control Server ready.\n");
     sendText(msg);
     sendPrompt();
 }
@@ -322,10 +292,6 @@ void ClientConnection::sendHelp()
     _H("      Example:  @quit\n");
     _H("  @\n");
     _H("      Show all macros defined for the current connection.\n");
-    _H("  prompt [on|off]\n");
-    _H("      Enable or disable the display of the command prompt.\n");
-    _H("      With no parameter, the command toggles the current state.\n");
-    _H("      Example:  prompt off\n");
     _H("  set <name> <value>\n");
     _H("      Define/replace macro.\n");
     _H("      Example:  set quit xl exit 0\n");
@@ -379,7 +345,7 @@ void ClientConnection::listHooks()
     {
         Hook * hook = mgr->hook(id);
         Q_ASSERT(hook);
-        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->commandPeek().cmd);
+        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->command());
         sendText(msg);
     }
 }
