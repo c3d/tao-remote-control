@@ -34,7 +34,7 @@
 Server * Server::inst = NULL;
 
 // Licensing
-#define LICNAME "RemoteControl " MODVERSION
+#define LICNAME "RemoteControl 1.0"
 #define EVAL_MINUTES 5
 #define STRINGIFY(s) #s
 #define TOSTR(s) STRINGIFY(s)
