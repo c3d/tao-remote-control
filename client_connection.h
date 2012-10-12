@@ -27,13 +27,14 @@
 #include <QMap>
 #include <QObject>
 #include <QString>
+#include <QThread>
 #include <iostream>
 
 QT_BEGIN_NAMESPACE
-class QAbstractSocket;
+class QTcpSocket;
 QT_END_NAMESPACE
 
-class ClientConnection : public QObject
+class ClientConnection : public QThread
 // ----------------------------------------------------------------------------
 //    Re-assemble commands and dispatch them to Hook objects
 // ----------------------------------------------------------------------------
@@ -41,21 +42,26 @@ class ClientConnection : public QObject
     Q_OBJECT
 
 public:
-    ClientConnection(QAbstractSocket *socket);
+    ClientConnection(int socketDescriptor);
     virtual ~ClientConnection();
 
 public:
-    void                sendText(QString msg);
     int                 currentHookId() { return currentHook; }
-    void                disconnect(QString msg);
 
 public slots:
-    void                setCurrentHookId(int id);
+    void                sendText(QString msg);
+    void                disconnect(QString msg);
+
+signals:
+    void                disconnected();
 
 protected slots:
+    void                onDisconnected();
     void                onReadyRead();
 
 protected:
+    virtual void        run();
+
     std::ostream &      debug();
     void                processCommand(QString cmd);
     void                processSetHook(QString cmd);
@@ -77,7 +83,8 @@ protected:
 private:
     typedef QMap<QString, QString> macro_map;
 
-    QAbstractSocket *   socket;
+    QTcpSocket *        socket;
+    int                 socketDescriptor;
     int                 currentHook;
     QByteArray          pending;
     macro_map           macros;

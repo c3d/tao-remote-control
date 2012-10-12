@@ -34,7 +34,7 @@
 Server * Server::inst = NULL;
 
 // Licensing
-#define LICNAME "RemoteControl 1.0"
+#define LICNAME "RemoteControl 1.01"
 #define EVAL_MINUTES 5
 #define STRINGIFY(s) #s
 #define TOSTR(s) STRINGIFY(s)
@@ -84,7 +84,20 @@ Server::Server(const ModuleApi *tao, int port)
     IFTRACE(remotecontrol)
         debug() << "Starting server\n";
 
-    if (!listen(QHostAddress::Any, port) && !listen(QHostAddress::Any, 0))
+    // Accept connection over IPv4 or IPv6
+    QHostAddress address = QHostAddress::Any;
+
+#if QT_VERSION < 0x050000  // Qt4
+#  if defined(Q_OS_MACX) || defined(Q_OS_LINUX)
+    // AnyIPv6 is v4 + v6, while Any is v4 only.
+    address = QHostAddress::AnyIPv6;
+#  else
+    // With Qt4/Windows, AnyIPv6 is v6 only and Any is v4 only. There is
+    // no simple way to do both v4 and v6, so keep v4 only.
+#  endif
+#endif
+
+    if (!listen(address, port) && !listen(address, 0))
     {
         IFTRACE(remotecontrol)
             debug() << "Server failed to start\n";
@@ -93,8 +106,20 @@ Server::Server(const ModuleApi *tao, int port)
     IFTRACE(remotecontrol)
         debug() << "Bound to " << +serverAddress().toString()
                 << ":" << serverPort() << "\n";
-    connect(this, SIGNAL(newConnection()),
-            this, SLOT(onNewConnection()));
+}
+
+
+Server::~Server()
+// ----------------------------------------------------------------------------
+//   Stop server, close all sockets
+// ----------------------------------------------------------------------------
+{
+    IFTRACE(remotecontrol)
+        debug() << "Stopping\n";
+    close();
+    foreach (ClientConnection *c, clients)
+        delete c;
+    clients.clear();
 }
 
 
@@ -108,52 +133,50 @@ std::ostream & Server::debug()
 }
 
 
-void Server::onNewConnection()
+void Server::incomingConnection(int sd)
 // ----------------------------------------------------------------------------
 //   Accept new incoming connection
 // ----------------------------------------------------------------------------
 {
-    QTcpSocket * socket = nextPendingConnection();
-    Q_ASSERT(socket);
-
-    if (!licensed && tao->taoRunTime() > 30)
+    if (!licensed && tao->taoRunTime() > (EVAL_MINUTES*60))
     {
+        QTcpSocket socket;
+        socket.setSocketDescriptor(sd);
         IFTRACE2(remotecontrol, lic)
             debug() << "Rejecting connection due to missing license\n";
         QString msg(licMsg);
         msg.replace(QChar('\n'), "\r\n");
         QByteArray ba(msg.toUtf8().constData());
-        socket->write(ba);
-        socket->flush();
-        socket->deleteLater();
+        socket.write(ba);
+        socket.flush();
         return;
     }
 
     IFTRACE(remotecontrol)
         debug() << "New connection accepted\n";
 
-    ClientConnection * conn = new ClientConnection(socket);
-    connect(socket, SIGNAL(disconnected()),
+    ClientConnection * conn = new ClientConnection(sd);
+    clients.insert(conn);
+    conn->moveToThread(conn);
+    connect(conn, SIGNAL(disconnected()),
             this, SLOT(onDisconnected()));
-    clients[socket] = conn;
+    conn->start();
 }
 
 
 void Server::onDisconnected()
 // ----------------------------------------------------------------------------
-//   Accept new incoming connection
+//   Connection closed
 // ----------------------------------------------------------------------------
 {
-    QTcpSocket * socket = dynamic_cast<QTcpSocket *>(sender());
-    Q_ASSERT(socket);
-    Q_ASSERT(clients.contains(socket));
+    ClientConnection * conn = dynamic_cast<ClientConnection *>(sender());
+    Q_ASSERT(conn);
+    Q_ASSERT(clients.contains(conn));
 
     IFTRACE(remotecontrol)
-        debug() << "Connection closed\n";
-
-    ClientConnection * conn = clients[socket];
-    clients.remove(socket);
-    conn->deleteLater();
+        debug() << "Deleting connection\n";
+    clients.remove(conn);
+    delete conn;
 }
 
 
@@ -174,6 +197,10 @@ void Server::disconnectNoLicense()
     IFTRACE2(remotecontrol, lic)
         debug() << "Evaluation period expired, closing client connections\n";
 
+    QString msg("\n" + licMsg + "Closing connection.\n");
     foreach (ClientConnection * client, clients.values())
-        client->disconnect("\n" + licMsg + "Closing connection.\n");
+    {
+        QMetaObject::invokeMethod(client, "disconnect", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    }
 }
