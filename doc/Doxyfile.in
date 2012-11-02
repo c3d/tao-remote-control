@@ -1,6 +1,6 @@
 @INCLUDE = ../../Doxyfile
 PROJECT_NAME = \"Remote Control\"
-PROJECT_NUMBER = 1.02
+PROJECT_NUMBER = $$MODVERSION
 PROJECT_LOGO = ../icon.png
-QHP_NAMESPACE = com.taodyne.TaoPresentations.modules.RemoteControl.1.02
+QHP_NAMESPACE = com.taodyne.TaoPresentations.modules.RemoteControl.$$MODVERSION
 QHP_VIRTUAL_FOLDER = RemoteControl
