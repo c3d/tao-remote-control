@@ -41,7 +41,7 @@ using namespace Tao;
 
 
 Hook::Hook(int id)
-    : id(id), onceCounter(0), refreshEvent(-1)
+    : id(id), execOnce(false), onceCounter(0), refreshEvent(-1)
 // ----------------------------------------------------------------------------
 //    Create hook
 // ----------------------------------------------------------------------------
@@ -57,9 +57,9 @@ XL::Tree_p Hook::exec(XL::Context *context, XL::Tree_p self)
 //    Execute XL code associated with this hook
 // ----------------------------------------------------------------------------
 {
-    Command code = command();
-    return evalInternal(context, self, (code.cmd != "") ? code.cmd : "false",
-                        code.once);
+    text code = command();
+    return evalInternal(context, self, (code != "") ? code : "false",
+                        execOnce);
 }
 
 
@@ -73,53 +73,30 @@ void Hook::setCommand(QString cmd, bool once)
     Q_ASSERT(QThread::currentThread() == qApp->thread());
     QMutexLocker locker(&mutex);
 
-    Q_ASSERT(tao);
-
-    // "Once" commands are stored in a FIFO. Other commands overwrite the
-    // previous one.
-    if (once)
+    execOnce = once;
+    if (execOnce)
     {
         // Append a string that will differ each time a "once" command is set
         // See evalInternal()
         QString tag = QString(" /* %1 */").arg(onceCounter++);
         cmd += tag;
-        onceCommands.append(+cmd);
-        IFTRACE(remotecontrolcode)
-            debug() << "'Once' command appended. XL code: " << +cmd << "\n";
-        tao->postEvent(refreshEvent);
     }
-    else
-    {
-        IFTRACE(remotecontrolcode)
-            debug() << "cmd set, XL code: " << +cmd << "\n";
-        this->cmd = +cmd;
-        tao->postEventOnce(refreshEvent);
-    }
+    this->cmd = +cmd;
+    IFTRACE(remotecontrolcode)
+        debug() << "once=" << execOnce
+                << " XL code set to: " << this->cmd << "\n";
+    Q_ASSERT(tao);
+    tao->postEventOnce(refreshEvent);
 }
 
 
-Hook::Command Hook::commandPeek()
+text Hook::command()
 // ----------------------------------------------------------------------------
-//    Return the next command to execute (thread safe)
-// ----------------------------------------------------------------------------
-{
-    QMutexLocker locker(&mutex);
-    if (onceCommands.isEmpty())
-        return Command(text(cmd), false);
-    return Command(onceCommands.first(), true);
-}
-
-
-Hook::Command Hook::command()
-// ----------------------------------------------------------------------------
-//    [Pop] and return the next command to execute (thread safe)
+//    Return the current command (thread safe)
 // ----------------------------------------------------------------------------
 {
     QMutexLocker locker(&mutex);
-    if (onceCommands.isEmpty())
-        return Command(text(cmd), false);
-    cmd = "";
-    return Command(onceCommands.takeFirst(), true);
+    return text(cmd);
 }
 
 
