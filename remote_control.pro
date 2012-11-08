@@ -14,6 +14,8 @@ MODINSTDIR = remote_control
 
 include(../modules.pri)
 
+MODVERSION = 1.02
+DEFINES += MODVERSION=\\\"$$MODVERSION\\\"
 
 INCLUDEPATH += $${TAOTOPSRC}/tao/include/tao/
 HEADERS = client_connection.h \
