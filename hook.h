@@ -26,7 +26,6 @@
 #include "tree.h"
 #include <QMutex>
 #include <QObject>
-#include <QList>
 #include <iostream>
 
 
@@ -36,14 +35,6 @@ class Hook : public QObject
 // ----------------------------------------------------------------------------
 {
     Q_OBJECT
-public:
-    struct Command
-    {
-        Command(text cmd, bool once) : cmd(cmd), once(once) {}
-
-        text cmd;
-        bool once;
-    };
 
 public:
     Hook(int id);
@@ -60,8 +51,7 @@ public:
 public:
     XL::Tree_p          exec(XL::Context *context, XL::Tree_p self);
 
-    Command             commandPeek();
-    Command             command();
+    text                command();
 
 public slots:
     void                setCommand(QString cmd, bool once = false);
@@ -78,7 +68,7 @@ private:
     QMutex              mutex;
     int                 id;
     text                cmd;
-    QList<text>         onceCommands;
+    bool                execOnce;
     int                 onceCounter;
 public:
     int                 refreshEvent;
