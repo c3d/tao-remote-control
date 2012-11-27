@@ -376,7 +376,7 @@ void ClientConnection::listHooks()
     {
         Hook * hook = mgr->hook(id);
         Q_ASSERT(hook);
-        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->command());
+        msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->commandPeek().cmd);
         sendText(msg);
     }
 }
