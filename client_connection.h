@@ -70,6 +70,7 @@ protected:
     void                processMacro(QString cmd);
     void                processXlCommand(QString cmd, bool once = false);
     void                processExit();
+    void                processPromptCommand(QString cmd);
 
     void                sendGreetings();
     void                sendPrompt();
@@ -88,6 +89,7 @@ private:
     int                 currentHook;
     QByteArray          pending;
     macro_map           macros;
+    bool                prompt;
 };
 
 #endif // CLIENT_CONNECTION_H
