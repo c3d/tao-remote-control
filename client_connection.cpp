@@ -267,8 +267,11 @@ void ClientConnection::sendText(QString msg)
     Q_ASSERT(QThread::currentThread() == thread());
 
     msg.replace(QChar('\n'), "\r\n");
+    IFTRACE(remotecontrolcmd)
+        debug() << "Sending: [" << +msg << "]";
     QByteArray ba(msg.toUtf8().constData());
     socket->write(ba);
+    socket->flush();
 }
 
 
