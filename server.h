@@ -47,6 +47,9 @@ public:
 public:
     QList<ClientConnection *> clientConnections();
 
+public slots:
+    void                      disconnectNoLicense();
+
 protected:
     Server(const Tao::ModuleApi *tao, int port);
     virtual ~Server();
