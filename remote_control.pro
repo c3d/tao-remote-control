@@ -14,7 +14,7 @@ MODINSTDIR = remote_control
 
 include(../modules.pri)
 
-MODVERSION = 1.02
+MODVERSION = 1.021
 DEFINES += MODVERSION=\\\"$$MODVERSION\\\"
 
 INCLUDEPATH += $${TAOTOPSRC}/tao/include/tao/
