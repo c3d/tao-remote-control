@@ -33,17 +33,6 @@
 
 Server * Server::inst = NULL;
 
-// Licensing
-#define LICNAME "RemoteControl " MODVERSION
-#define EVAL_MINUTES 5
-#define STRINGIFY(s) #s
-#define TOSTR(s) STRINGIFY(s)
-static const QString licMsg("You have no valid license for " LICNAME ".\n"
-                            "As a result, this module may only be used for "
-                            TOSTR(EVAL_MINUTES)
-                            " minutes after the application is started.\n");
-
-
 using namespace Tao;
 
 
@@ -64,23 +53,6 @@ Server::Server(const ModuleApi *tao, int port)
 // ----------------------------------------------------------------------------
     : tao(tao)
 {
-    licensed = tao->checkImpressOrLicense(LICNAME);
-    if (!licensed)
-    {
-        IFTRACE2(remotecontrol, lic)
-            debug() << "Unlicensed\n";
-        double expires = (EVAL_MINUTES*60 - tao->taoRunTime()) * 1000;
-        if (expires < 0)
-        {
-            IFTRACE2(remotecontrol, lic)
-                debug() << "Evaluation period expired, not listening.\n";
-            return;
-        }
-        IFTRACE2(remotecontrol, lic)
-            debug() << "Evaluation expires in " << expires << " ms\n";
-        QTimer::singleShot(expires, this, SLOT(disconnectNoLicense()));
-    }
-
     IFTRACE(remotecontrol)
         debug() << "Starting server\n";
 
@@ -138,20 +110,6 @@ void Server::incomingConnection(int sd)
 //   Accept new incoming connection
 // ----------------------------------------------------------------------------
 {
-    if (!licensed && tao->taoRunTime() > (EVAL_MINUTES*60))
-    {
-        QTcpSocket socket;
-        socket.setSocketDescriptor(sd);
-        IFTRACE2(remotecontrol, lic)
-            debug() << "Rejecting connection due to missing license\n";
-        QString msg(licMsg);
-        msg.replace(QChar('\n'), "\r\n");
-        QByteArray ba(msg.toUtf8().constData());
-        socket.write(ba);
-        socket.flush();
-        return;
-    }
-
     IFTRACE(remotecontrol)
         debug() << "New connection accepted\n";
 
@@ -186,21 +144,4 @@ QList<ClientConnection *> Server::clientConnections()
 // ----------------------------------------------------------------------------
 {
     return clients.values();
-}
-
-
-void Server::disconnectNoLicense()
-// ----------------------------------------------------------------------------
-//   Close connection with all clients
-// ----------------------------------------------------------------------------
-{
-    IFTRACE2(remotecontrol, lic)
-        debug() << "Evaluation period expired, closing client connections\n";
-
-    QString msg("\n" + licMsg + "Closing connection.\n");
-    foreach (ClientConnection * client, clients.values())
-    {
-        QMetaObject::invokeMethod(client, "disconnect", Qt::QueuedConnection,
-                                  Q_ARG(QString, msg));
-    }
 }
