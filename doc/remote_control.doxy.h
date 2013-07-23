@@ -1,10 +1,10 @@
 /**
  * @~english
  * @taomoduledescription{RemoteControl, Remote control}
+ * <tt>import RemoteControl</tt> - Start a command-line interface that
+ * can be used to send commands to Tao Presentations.@n
  *
- * <tt>import RemoteControl</tt> - Starts a command-line interface that
- * can be used to send commands to
- * Tao Presentations. The commands are received as raw text over a TCP
+ * The commands are received as raw text over a TCP
  * connection. You can use an application such as telnet to connect to
  * the server.
  *
@@ -115,10 +115,10 @@ expect "Page 3"
  *
  * @~french
  * @taomoduledescription{RemoteControl, Contrôle à distance}
- *
  * <tt>import RemoteControl</tt> - Démarre une interface en ligne de commande
- * qui permet de piloter
- * Tao Presentations et le document en cours. Les commandes se présentent
+ * qui permet de piloter Tao Presentations et le document en cours.@n
+ *
+ * Les commandes se présentent
  * sous la forme de text brut, reçu sur une connexion TCP. Vous pouvez
  * utiliser l'application telnet pour vous connecter au serveur.
  *
