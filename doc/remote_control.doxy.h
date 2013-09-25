@@ -9,7 +9,7 @@
  * the server.
  *
  * Here is an example:
-@code
+ * @code
 import RemoteControl
 
 page "Test hook",
@@ -36,10 +36,10 @@ draw_frame Caption:text ->
         align_center
         font "Ubuntu", 24
         text Caption
-@endcode
+ * @endcode
  * Here is the telnet session leading to the screen capture
  * below.
-@code
+ * @code
 $ telnet localhost 6560
 Trying 127.0.0.1...
 Connected to localhost.
@@ -48,7 +48,7 @@ Tao Presentations Remote Control Server ready.
 #0> xl rotatez 20*sin time ; rectangle 0, 0, 100, 150
 #0> @quit
 Connection closed by foreign host.
-@endcode
+ * @endcode
  * @image html rc.png "Remote control example"
  *
  * The remote control module allows for potentially complex interactions
@@ -68,7 +68,7 @@ Connection closed by foreign host.
  *  Then display page 2. The counter will be decremented as
  * previously, but when it reaches zero you will observe that the Expect script
  * sends a <tt>\@nextp</tt> command, telling the document to skip to page 3.
-@code
+ * @code
 // rc2.ddd
 
 import RemoteControl
@@ -102,15 +102,15 @@ page "Done",
     my_text_box
         text "Done!"
         rc_writeln "Page 3"
-@endcode
-@code
+ * @endcode
+ * @code
 #!/usr/bin/expect
 # rc2.expect
 spawn telnet [lindex $argv 0] 6560
 expect "Page 2"
 send "@nextp\r"
 expect "Page 3"
-@endcode
+ * @endcode
  * @endtaomoduledescription{RemoteControl}
  *
  * @~french
@@ -123,7 +123,7 @@ expect "Page 3"
  * utiliser l'application telnet pour vous connecter au serveur.
  *
  * Voici un exemple :
-@code
+ * @code
 import RemoteControl
 
 page "Test hook",
@@ -150,10 +150,10 @@ draw_frame Caption:text ->
         align_center
         font "Ubuntu", 24
         text Caption
-@endcode
+ * @endcode
  * Voici une copie de la session telnet qui conduit à la capture d'écran
  * qui suit.
-@code
+ * @code
 $ telnet localhost 6560
 Trying 127.0.0.1...
 Connected to localhost.
@@ -162,7 +162,7 @@ Tao Presentations Remote Control Server ready.
 #0> xl rotatez 20*sin time ; rectangle 0, 0, 100, 150
 #0> @quit
 Connection closed by foreign host.
-@endcode
+ * @endcode
  * @image html rc.png "Remote control example"
  *
  * Le module de contrôle à distance permet des interactions potentiellement
@@ -183,7 +183,7 @@ Connection closed by foreign host.
  * Affichez la page 2. Le décompte va s'afficher comme précédemment, mais
  * lorsque le compteur atteindra zéro, le script Expect déclenchera le passage
  * à la page suivante en envoyant la commande <tt>\@nextp</tt>.
-@code
+ * @code
 // rc2.ddd
 
 import RemoteControl
@@ -217,15 +217,15 @@ page "Done",
     my_text_box
         text "Done!"
         rc_writeln "Page 3"
-@endcode
-@code
+ * @endcode
+ * @code
 #!/usr/bin/expect
 # rc2.expect
 spawn telnet [lindex $argv 0] 6560
 expect "Page 2"
 send "@nextp\r"
 expect "Page 3"
-@endcode
+ * @endcode
  * @endtaomoduledescription{RemoteControl}
  * @~
  * @{
@@ -274,7 +274,7 @@ rc_hook(id:integer, port:integer);
  * Exécute du code XL associé à un hook
  * Cette fonction est équivalente à:
  * @~
-@code rc_hook id, REMOTE_CONTROL_PORT @endcode
+ * @code rc_hook id, REMOTE_CONTROL_PORT @endcode
  */
 rc_hook(id:integer);
 
@@ -286,7 +286,7 @@ rc_hook(id:integer);
  * Exécute du code XL associé au hook 0.
  * Cette fonction est équivalente à:
  * @~
-@code rc_hook 0, REMOTE_CONTROL_PORT @endcode
+ * @code rc_hook 0, REMOTE_CONTROL_PORT @endcode
  */
 rc_hook();
 
@@ -320,7 +320,7 @@ rc_writeln(id:integer, msg:text);
  * Envoie une chaîne de caractères à tous les clients connectés au hook 0.
  * Cette fonction est équivalente à:
  * @~
-@code rc_writeln 0, msg @endcode
+ * @code rc_writeln 0, msg @endcode
  */
 rc_writeln(mdg:text);
 
