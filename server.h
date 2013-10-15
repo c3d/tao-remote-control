@@ -39,12 +39,6 @@ class Server : public QTcpServer
 {
     Q_OBJECT
 
-#if QT_VERSION >= 0x050000
-    typedef qintptr handle_t;
-#else
-    typedef int handle_t;
-#endif
-
 public:
     static Server *     instance(const Tao::ModuleApi *tao, int port = 6560);
     static bool         started() { return inst; }
@@ -58,7 +52,7 @@ protected:
     virtual ~Server();
 
 protected:
-    virtual void        incomingConnection(handle_t handle);
+    virtual void        incomingConnection(int handle);
 
 protected:
     std::ostream &      debug();
