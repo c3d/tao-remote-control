@@ -105,7 +105,7 @@ std::ostream & Server::debug()
 }
 
 
-void Server::incomingConnection(Server::handle_t sd)
+void Server::incomingConnection(int sd)
 // ----------------------------------------------------------------------------
 //   Accept new incoming connection
 // ----------------------------------------------------------------------------
