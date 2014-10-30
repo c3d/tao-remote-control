@@ -2,7 +2,7 @@
  * @~english
  * @taomoduledescription{RemoteControl, Remote control}
  * <tt>import RemoteControl</tt> - Start a command-line interface that
- * can be used to send commands to Tao Presentations.@n
+ * can be used to send commands to Tao3D.@n
  *
  * The commands are received as raw text over a TCP
  * connection. You can use an application such as telnet to connect to
@@ -44,7 +44,7 @@ $ telnet localhost 6560
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
-Tao Presentations Remote Control Server ready.
+Tao3D Remote Control Server ready.
 #0> xl rotatez 20*sin time ; rectangle 0, 0, 100, 150
 #0> @quit
 Connection closed by foreign host.
@@ -52,9 +52,9 @@ Connection closed by foreign host.
  * @image html rc.png "Remote control example"
  *
  * The remote control module allows for potentially complex interactions
- * between Tao Presentations and another application. The following example
+ * between Tao3D and another application. The following example
  * illustrates how it is possible to skip to the next page when a predefined
- * condition is reached. It is made of a Tao Presentations document,
+ * condition is reached. It is made of a Tao3D document,
  * <tt>rc2.ddd</tt>, and a script written in Expect, <tt>rc2.expect</tt>. @n
  * The document first has a start page, telling the user to press the down
  * arrow key to start the test. Then the second page shows a 5 second
@@ -116,7 +116,7 @@ expect "Page 3"
  * @~french
  * @taomoduledescription{RemoteControl, Contrôle à distance}
  * <tt>import RemoteControl</tt> - Démarre une interface en ligne de commande
- * qui permet de piloter Tao Presentations et le document en cours.@n
+ * qui permet de piloter Tao3D et le document en cours.@n
  *
  * Les commandes se présentent
  * sous la forme de text brut, reçu sur une connexion TCP. Vous pouvez
@@ -158,7 +158,7 @@ $ telnet localhost 6560
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
-Tao Presentations Remote Control Server ready.
+Tao3D Remote Control Server ready.
 #0> xl rotatez 20*sin time ; rectangle 0, 0, 100, 150
 #0> @quit
 Connection closed by foreign host.
@@ -166,9 +166,9 @@ Connection closed by foreign host.
  * @image html rc.png "Remote control example"
  *
  * Le module de contrôle à distance permet des interactions potentiellement
- * complexes entre Tao Presentations et une autre application. L'exemple qui
+ * complexes entre Tao3D et une autre application. L'exemple qui
  * suit montre comment passer à la page suivante lorsqu'une condition
- * prédéfinie est remplie. Il est composé d'un document Tao Presentations,
+ * prédéfinie est remplie. Il est composé d'un document Tao3D,
  * <tt>rc2.ddd</tt>, ainsi que d'un script Expect, <tt>rc2.expect</tt>. @n
  * Le document comporte une page de démarrage, qui demande à l'utilisateur
  * d'appuyer sur la touche «flêche vers le bas» pour démarrer le test. Puis,

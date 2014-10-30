@@ -293,7 +293,7 @@ void ClientConnection::sendGreetings()
 //   Send text to newly connected client
 // ----------------------------------------------------------------------------
 {
-    QString msg("Tao Presentations Remote Control Server version "
+    QString msg("Tao3D Remote Control Server version "
                 MODVERSION " ready.\n");
     sendText(msg);
     sendPrompt();
