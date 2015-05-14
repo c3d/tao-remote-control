@@ -55,7 +55,7 @@ void HookManager::remove(int id)
 //    Remove hook from map
 // ----------------------------------------------------------------------------
 {
-    Q_ASSERT(hooks.contains(id));
+    XL_ASSERT(hooks.contains(id));
     hooks.remove(id);
 }
 

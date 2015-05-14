@@ -69,7 +69,7 @@ ClientConnection::~ClientConnection()
 //   Delete connection
 // ----------------------------------------------------------------------------
 {
-    Q_ASSERT(QThread::currentThread() != thread());
+    XL_ASSERT(QThread::currentThread() != thread());
 
     IFTRACE(remotecontrol)
         debug() << "Stopping thread\n";
@@ -264,7 +264,7 @@ void ClientConnection::sendText(QString msg)
 {
     // Don't call from a thread that is not the connection thread, or text
     // could possibly be mangled
-    Q_ASSERT(QThread::currentThread() == thread());
+    XL_ASSERT(QThread::currentThread() == thread());
 
     msg.replace(QChar('\n'), "\r\n");
     IFTRACE(remotecontrolcmd)
@@ -378,7 +378,7 @@ void ClientConnection::listHooks()
     foreach (int id, ids)
     {
         Hook * hook = mgr->hook(id);
-        Q_ASSERT(hook);
+        XL_ASSERT(hook);
         msg = QString(" #%1 '%2'\n").arg(id).arg(+hook->commandPeek().cmd);
         sendText(msg);
     }

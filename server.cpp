@@ -128,8 +128,8 @@ void Server::onDisconnected()
 // ----------------------------------------------------------------------------
 {
     ClientConnection * conn = dynamic_cast<ClientConnection *>(sender());
-    Q_ASSERT(conn);
-    Q_ASSERT(clients.contains(conn));
+    XL_ASSERT(conn);
+    XL_ASSERT(clients.contains(conn));
 
     IFTRACE(remotecontrol)
         debug() << "Deleting connection\n";

@@ -70,10 +70,10 @@ void Hook::setCommand(QString cmd, bool once)
 {
     // Call from main thread only, because ModuleApi::postEvent is not supposed
     // to be thread-safe. It also serializes access to this->cmd.
-    Q_ASSERT(QThread::currentThread() == qApp->thread());
+    XL_ASSERT(QThread::currentThread() == qApp->thread());
     QMutexLocker locker(&mutex);
 
-    Q_ASSERT(tao);
+    XL_ASSERT(tao);
 
     // "Once" commands are stored in a FIFO. Other commands overwrite the
     // previous one.
